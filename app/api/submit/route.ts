@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   }
 
   const to = process.env.NOTIFICATION_EMAIL ?? "daisuke.araseki@gmail.com"
-  const from = process.env.RESEND_FROM ?? "Apo Check <noreply@yoyaku-ai.sbs>"
+  const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
   const { subject, html, text } = buildAppointmentEmail(form)
 
   const idempotencyKey = `appointment/${form.date}/${form.time}/${form.phone.replace(/\D/g, "")}`
