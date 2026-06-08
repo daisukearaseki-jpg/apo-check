@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const from = process.env.RESEND_FROM ?? "Apo Check <noreply@yoyaku-ai.sbs>"
   const { subject, html, text } = buildAppointmentEmail(form)
 
-  const idempotencyKey = `appointment/${form.date}/${form.time}/${form.phone}/${form.lastName}${form.firstName}`
+  const idempotencyKey = `appointment/${form.date}/${form.time}/${form.phone.replace(/\D/g, "")}`
 
   const { data, error } = await resend.emails.send(
     { from, to: [to], subject, html, text },
