@@ -14,7 +14,7 @@ export interface AppointmentForm {
   address: string
   adultCount: string
   childCount: string
-  // ステップ3: 適格確認
+  // ステップ3: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
   electricityOver8000: YesNo
@@ -22,6 +22,8 @@ export interface AppointmentForm {
   solarConsidered: YesNo
   solarConsideredTime: string
   solarConsideredReason: string
+  elevationDrawing: string
+  exteriorPhotoPermission: YesNo
   // ステップ4: 質問事項
   hasQuestions: YesNo
   questionDetail: string
@@ -44,6 +46,8 @@ export const emptyForm: AppointmentForm = {
   solarConsidered: "",
   solarConsideredTime: "",
   solarConsideredReason: "",
+  elevationDrawing: "",
+  exteriorPhotoPermission: "",
   hasQuestions: "",
   questionDetail: "",
 }
@@ -105,7 +109,7 @@ export interface StepMeta {
 export const STEPS: StepMeta[] = [
   { id: "schedule", title: "アポ日時", short: "日時" },
   { id: "customer", title: "お客様情報", short: "お客様" },
-  { id: "qualify", title: "適格確認", short: "確認" },
+  { id: "qualify", title: "ヒアリング内容", short: "ヒアリング" },
   { id: "confirm", title: "最終確認", short: "完了" },
 ]
 
@@ -182,6 +186,8 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
         errors.push({ field: "solarConsideredReason", message: "検討理由を入力してください" })
       }
     }
+    req("elevationDrawing", "立面図の有無を選択してください")
+    req("exteriorPhotoPermission", "建物外観の撮影許可を選択してください")
   }
 
   if (step === "confirm") {

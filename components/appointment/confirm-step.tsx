@@ -80,8 +80,8 @@ export function ConfirmStep({
         />
       </SummaryBlock>
 
-      {/* 適格確認 */}
-      <SummaryBlock title="適格確認" onEdit={() => onJump(2)}>
+      {/* ヒアリング内容 */}
+      <SummaryBlock title="ヒアリング内容" onEdit={() => onJump(2)}>
         {qualifyItems.map((it) => {
           const isNg = NG_ANSWERS[it.key] === it.value
           return (
@@ -119,6 +119,8 @@ export function ConfirmStep({
             <Row label="検討理由" value={form.solarConsideredReason || "未入力"} />
           </>
         )}
+        <Row label="立面図の有無" value={form.elevationDrawing || "未入力"} />
+        <Row label="建物外観の撮影許可" value={yn(form.exteriorPhotoPermission)} />
       </SummaryBlock>
 
       {/* 質問事項 */}

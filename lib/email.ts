@@ -36,7 +36,7 @@ export function buildAppointmentEmail(form: AppointmentForm) {
         ${row("住所", form.address)}
         ${row("人数", `大人 ${form.adultCount || "0"}人 / 子供 ${form.childCount || "0"}人`)}
       </table>
-      <h2 style="margin:0 0 8px;font-size:15px;color:#111827">適格確認</h2>
+      <h2 style="margin:0 0 8px;font-size:15px;color:#111827">ヒアリング内容</h2>
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
         ${row("建物オーナー", yn(form.isBuildingOwner))}
         ${row("情報公開の承諾", yn(form.consentDisclosure))}
@@ -45,6 +45,8 @@ export function buildAppointmentEmail(form: AppointmentForm) {
         ${row("ソーラー検討", form.solarConsidered === "yes" ? "あり" : form.solarConsidered === "no" ? "なし" : "未入力")}
         ${form.solarConsidered === "yes" ? row("検討時期", form.solarConsideredTime) : ""}
         ${form.solarConsidered === "yes" ? row("検討理由", form.solarConsideredReason) : ""}
+        ${row("立面図の有無", form.elevationDrawing)}
+        ${row("建物外観の撮影許可", yn(form.exteriorPhotoPermission))}
       </table>
       <h2 style="margin:0 0 8px;font-size:15px;color:#111827">質問事項</h2>
       <table style="width:100%;border-collapse:collapse">
@@ -69,7 +71,7 @@ export function buildAppointmentEmail(form: AppointmentForm) {
     `住所: ${form.address}`,
     `人数: 大人 ${form.adultCount || "0"}人 / 子供 ${form.childCount || "0"}人`,
     "",
-    "■ 適格確認",
+    "■ ヒアリング内容",
     `建物オーナー: ${yn(form.isBuildingOwner)}`,
     `情報公開の承諾: ${yn(form.consentDisclosure)}`,
     `電気代 8,000円以上: ${yn(form.electricityOver8000)}`,
@@ -78,6 +80,8 @@ export function buildAppointmentEmail(form: AppointmentForm) {
     ...(form.solarConsidered === "yes"
       ? [`検討時期: ${form.solarConsideredTime}`, `検討理由: ${form.solarConsideredReason}`]
       : []),
+    `立面図の有無: ${form.elevationDrawing || "未入力"}`,
+    `建物外観の撮影許可: ${yn(form.exteriorPhotoPermission)}`,
     "",
     "■ 質問事項",
     `質問の有無: ${form.hasQuestions === "yes" ? "あり" : form.hasQuestions === "no" ? "なし" : "未入力"}`,

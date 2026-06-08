@@ -160,7 +160,7 @@ export function AppointmentWizard() {
         <p className="mb-5 text-sm text-muted-foreground">
           {current.id === "schedule" && "訪問・面談の日時を確定します。"}
           {current.id === "customer" && "お客様の連絡先を正確に入力します。"}
-          {current.id === "qualify" && "商談条件を1つずつ確認します。"}
+          {current.id === "qualify" && "ヒアリング項目を1つずつ確認します。"}
           {current.id === "confirm" && "内容を最終チェックして登録します。"}
         </p>
 
@@ -357,6 +357,26 @@ export function AppointmentWizard() {
                   </Field>
                 </div>
               )}
+            </Card>
+            <Card className="flex flex-col gap-3 p-5">
+              <Field label="立面図の有無" error={errorMap.elevationDrawing}>
+                <ChipSelect
+                  ariaLabel="立面図の有無"
+                  options={["あり", "不明"]}
+                  value={form.elevationDrawing}
+                  onChange={(v) => update("elevationDrawing", v)}
+                  columns={2}
+                />
+              </Field>
+            </Card>
+            <Card className="flex flex-col gap-3 p-5">
+              <Field label="建物外観の撮影許可" error={errorMap.exteriorPhotoPermission}>
+                <YesNoToggle
+                  name="建物外観の撮影許可"
+                  value={form.exteriorPhotoPermission}
+                  onChange={(v) => update("exteriorPhotoPermission", v)}
+                />
+              </Field>
             </Card>
           </div>
         )}
