@@ -29,6 +29,8 @@ export interface AppointmentForm {
   questionDetail: string
 }
 
+export const DEFAULT_ADDRESS = "東京都"
+
 export const emptyForm: AppointmentForm = {
   date: "",
   weekday: "",
@@ -36,7 +38,7 @@ export const emptyForm: AppointmentForm = {
   lastName: "",
   firstName: "",
   phone: "",
-  address: "",
+  address: DEFAULT_ADDRESS,
   adultCount: "",
   childCount: "",
   isBuildingOwner: "",

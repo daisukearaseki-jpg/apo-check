@@ -117,10 +117,9 @@ export function AppointmentWizard() {
         return
       }
 
-      toast.success("アポ情報を送信しました", {
-        description: `${form.lastName} ${form.firstName} 様 / ${form.date}(${form.weekday}) ${form.time}`,
-      })
-      setCompleted(STEPS.map((s) => s.id))
+      const description = `${form.lastName} ${form.firstName} 様 / ${form.date}(${form.weekday}) ${form.time}`
+      toast.success("アポ情報を送信しました", { description })
+      handleReset()
     } catch {
       toast.error("送信に失敗しました", {
         description: "ネットワークエラーが発生しました",
@@ -248,7 +247,7 @@ export function AppointmentWizard() {
                 id="address"
                 value={form.address}
                 onChange={(e) => update("address", e.target.value)}
-                placeholder="東京都渋谷区神宮前1-2-3 ○○マンション101"
+                placeholder="渋谷区神宮前1-2-3 ○○マンション101"
                 rows={2}
                 className="text-base"
               />
