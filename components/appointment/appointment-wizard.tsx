@@ -27,6 +27,7 @@ import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
 import { ChipSelect } from "./chip-select"
 import { ConfirmStep } from "./confirm-step"
+import type { PhotoAttachment } from "@/lib/photo"
 
 export function AppointmentWizard() {
   const [form, setForm] = useState<AppointmentForm>(emptyForm)
@@ -34,6 +35,7 @@ export function AppointmentWizard() {
   const [errors, setErrors] = useState<FieldError[]>([])
   const [completed, setCompleted] = useState<StepId[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [photo, setPhoto] = useState<PhotoAttachment | null>(null)
 
   const current = STEPS[stepIndex]
   const errorMap = useMemo(() => {
@@ -106,7 +108,7 @@ export function AppointmentWizard() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(photo ? { ...form, photo } : form),
       })
       const body = await res.json().catch(() => ({}))
 
@@ -131,6 +133,7 @@ export function AppointmentWizard() {
 
   function handleReset() {
     setForm(emptyForm)
+    setPhoto(null)
     setErrors([])
     setCompleted([])
     setStepIndex(0)
@@ -357,6 +360,8 @@ export function AppointmentWizard() {
         {current.id === "confirm" && (
           <ConfirmStep
             form={form}
+            photo={photo}
+            onChangePhoto={setPhoto}
             errorMap={errorMap}
             onChangeHasQuestions={(v) => update("hasQuestions", v)}
             onChangeQuestionDetail={(v) => update("questionDetail", v)}

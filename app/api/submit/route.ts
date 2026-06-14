@@ -3,6 +3,11 @@ import { Resend } from "resend"
 
 import { type AppointmentForm, validateStep } from "@/lib/appointment"
 import { buildAppointmentEmail } from "@/lib/email"
+import type { PhotoAttachment } from "@/lib/photo"
+
+interface SubmitBody extends AppointmentForm {
+  photo?: PhotoAttachment
+}
 
 export async function POST(req: Request) {
   if (!process.env.RESEND_API_KEY) {
@@ -14,12 +19,14 @@ export async function POST(req: Request) {
 
   const resend = new Resend(process.env.RESEND_API_KEY)
 
-  let form: AppointmentForm
+  let body: SubmitBody
   try {
-    form = await req.json()
+    body = await req.json()
   } catch {
     return NextResponse.json({ error: "不正なリクエストです" }, { status: 400 })
   }
+
+  const { photo, ...form } = body
 
   const errors = [
     ...validateStep("schedule", form),
@@ -36,12 +43,26 @@ export async function POST(req: Request) {
 
   const to = process.env.NOTIFICATION_EMAIL ?? "daisuke.araseki@gmail.com"
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
-  const { subject, text } = buildAppointmentEmail(form)
+  const { subject, text } = buildAppointmentEmail(form, Boolean(photo?.data))
 
   const idempotencyKey = `appointment/${form.date}/${form.time}/${form.phone.replace(/\D/g, "")}`
 
   const { data, error } = await resend.emails.send(
-    { from, to: [to], subject, text },
+    {
+      from,
+      to: [to],
+      subject,
+      text,
+      attachments: photo?.data
+        ? [
+            {
+              filename: photo.filename || "apo-photo.jpg",
+              content: photo.data,
+              contentType: photo.contentType || "image/jpeg",
+            },
+          ]
+        : undefined,
+    },
     { idempotencyKey },
   )
 

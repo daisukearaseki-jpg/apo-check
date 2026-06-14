@@ -10,7 +10,7 @@ function line(label: string, value: string): string {
   return `・${label}：${value}`
 }
 
-export function buildAppointmentEmail(form: AppointmentForm) {
+export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
   const name = `${form.lastName} ${form.firstName}`.trim()
   const subject = `【アポ取得】${name} 様 / ${form.date} ${form.time}`
   const registeredAt = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
@@ -65,6 +65,8 @@ export function buildAppointmentEmail(form: AppointmentForm) {
     "■ 質問事項",
     "━━━━━━━━━━━━━━━━",
     ...questionLines,
+    "",
+    line("添付写真", hasPhoto ? "1枚（メールに添付）" : "なし"),
   ].join("\n")
 
   return { subject, text }
