@@ -27,7 +27,7 @@ import { encodePlusCode, normalizePlusCode, PLUS_CODE_LABEL } from "@/lib/plus-c
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
-import { YesNoUnknownToggle } from "./yes-no-unknown-toggle"
+import { YesUnknownToggle } from "./yes-unknown-toggle"
 import { ChipSelect } from "./chip-select"
 import { ConfirmStep } from "./confirm-step"
 import { AppointmentDatePicker } from "./date-picker"
@@ -341,14 +341,13 @@ export function AppointmentWizard() {
             </Card>
             <Card className="flex flex-col gap-4 p-5">
               <Field label="電気代は月8,000円以上ですか?" error={errorMap.electricityOver8000}>
-                <YesNoUnknownToggle
+                <YesUnknownToggle
                   name="電気代確認"
                   value={form.electricityOver8000}
                   onChange={(v) => {
                     update("electricityOver8000", v)
                     if (v !== "yes") update("electricityAmount", "")
                   }}
-                  warnOnNo
                 />
               </Field>
               {form.electricityOver8000 === "yes" && (

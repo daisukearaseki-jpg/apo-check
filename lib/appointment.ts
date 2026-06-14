@@ -4,6 +4,8 @@ export type YesNo = "yes" | "no" | ""
 
 export type YesNoUnknown = "yes" | "no" | "unknown" | ""
 
+export type YesUnknown = "yes" | "unknown" | ""
+
 export interface AppointmentForm {
   // ステップ1: アポ日時
   date: string
@@ -18,7 +20,7 @@ export interface AppointmentForm {
   // ステップ3: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
-  electricityOver8000: YesNoUnknown
+  electricityOver8000: YesUnknown
   electricityAmount: string
   ageUnder75: YesNo
   solarConsidered: YesNo
@@ -194,10 +196,9 @@ export function isValidPhone(value: string): boolean {
 }
 
 // 適格項目: NGとなる回答 (商談を進められない可能性が高い回答)
-export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesNoUnknown>> = {
+export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesUnknown>> = {
   isBuildingOwner: "no",
   consentDisclosure: "no",
-  electricityOver8000: "no",
   ageUnder75: "no",
 }
 

@@ -9,7 +9,6 @@ import { PhotoCapture } from "./photo-capture"
 import {
   type AppointmentForm,
   type YesNo,
-  type YesNoUnknown,
   NG_ANSWERS,
 } from "@/lib/appointment"
 import type { PhotoAttachment } from "@/lib/photo"
@@ -31,9 +30,8 @@ function yn(v: YesNo): string {
   return "未入力"
 }
 
-function ynu(v: YesNoUnknown): string {
+function yu(v: string): string {
   if (v === "yes") return "はい"
-  if (v === "no") return "いいえ"
   if (v === "unknown") return "不明"
   return "未入力"
 }
@@ -54,21 +52,17 @@ export function ConfirmStep({
   ]
 
   const ngList = qualifyItems.filter((it) => NG_ANSWERS[it.key] === it.value)
-  const electricityNg = form.electricityOver8000 === "no"
 
   return (
     <div className="flex flex-col gap-4">
       {/* 適格チェックの警告 */}
-      {ngList.length > 0 || electricityNg ? (
+      {ngList.length > 0 ? (
         <div className="flex items-start gap-2.5 rounded-xl border-2 border-destructive bg-destructive/5 p-4">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />
           <div className="text-sm">
             <p className="font-bold text-destructive">要確認: 条件に合わない回答があります</p>
             <p className="mt-0.5 text-foreground">
-              {[
-                ...ngList.map((it) => it.label),
-                ...(electricityNg ? ["電気代 8,000円以上"] : []),
-              ].join(" / ")}
+              {ngList.map((it) => it.label).join(" / ")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               そのまま登録できますが、上長への確認を推奨します。
@@ -126,18 +120,9 @@ export function ConfirmStep({
         })}
         <div className="flex items-center justify-between py-1.5">
           <span className="text-sm text-muted-foreground">電気代 8,000円以上</span>
-          <span
-            className={cn(
-              "flex items-center gap-1 text-sm font-semibold",
-              electricityNg ? "text-destructive" : "text-foreground",
-            )}
-          >
-            {electricityNg ? (
-              <AlertTriangle className="size-3.5" />
-            ) : (
-              <CheckCircle2 className="size-3.5 text-primary" />
-            )}
-            {ynu(form.electricityOver8000)}
+          <span className="flex items-center gap-1 text-sm font-semibold text-foreground">
+            <CheckCircle2 className="size-3.5 text-primary" />
+            {yu(form.electricityOver8000)}
           </span>
         </div>
         {form.electricityOver8000 === "yes" && (
