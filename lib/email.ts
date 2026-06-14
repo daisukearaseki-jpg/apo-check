@@ -40,7 +40,7 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
       : [line("質問の有無", form.hasQuestions === "no" ? "なし" : "未入力")]
 
   const text = [
-    "【アポ取得チェック】新規登録",
+    "【アポ取得アプリ】新規登録",
     line("登録日時", registeredAt),
     "",
     "━━━━━━━━━━━━━━━━",
@@ -57,7 +57,7 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
     line("住所", form.address),
     "",
     "━━━━━━━━━━━━━━━━",
-    "■ ヒアリング内容",
+    "■ 詳細確認",
     "━━━━━━━━━━━━━━━━",
     ...hearingLines,
     "",

@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'アポ取得チェック | 営業アポ入力',
+  title: 'アポ取得アプリ | 営業アポ入力',
   description: '営業のアポ取得時に必要事項をもれなく・ミスなく入力するアプリ',
   generator: 'v0.app',
   icons: {

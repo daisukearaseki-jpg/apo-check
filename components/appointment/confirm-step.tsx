@@ -79,7 +79,7 @@ export function ConfirmStep({
       </SummaryBlock>
 
       {/* ヒアリング内容 */}
-      <SummaryBlock title="ヒアリング内容" onEdit={() => onJump(2)}>
+      <SummaryBlock title="詳細確認" onEdit={() => onJump(2)}>
         {qualifyItems.map((it) => {
           const isNg = NG_ANSWERS[it.key] === it.value
           return (

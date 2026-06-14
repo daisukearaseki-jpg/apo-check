@@ -146,7 +146,7 @@ export function AppointmentWizard() {
       <header className="sticky top-0 z-10 border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-md items-center gap-2">
           <ClipboardCheck className="size-5 text-primary" />
-          <h1 className="text-base font-bold text-foreground">アポ取得チェック</h1>
+          <h1 className="text-base font-bold text-foreground">アポ取得アプリ</h1>
           <span className="ml-auto text-xs font-medium text-muted-foreground">
             {stepIndex + 1} / {STEPS.length}
           </span>
@@ -156,15 +156,9 @@ export function AppointmentWizard() {
       <main className="mx-auto w-full max-w-md flex-1 px-4 pb-32 pt-5">
         <Stepper current={current.id} completed={completed} />
 
-        <h2 className="mb-1 mt-6 text-xl font-bold tracking-tight text-foreground text-balance">
+        <h2 className="mb-5 mt-6 text-xl font-bold tracking-tight text-foreground text-balance">
           {current.title}
         </h2>
-        <p className="mb-5 text-sm text-muted-foreground">
-          {current.id === "schedule" && "訪問・面談の日時を確定します。"}
-          {current.id === "customer" && "お客様の連絡先を正確に入力します。"}
-          {current.id === "qualify" && "ヒアリング項目を1つずつ確認します。"}
-          {current.id === "confirm" && "内容を最終チェックして登録します。"}
-        </p>
 
         {current.id === "schedule" && (
           <Card className="flex flex-col gap-5 p-5">

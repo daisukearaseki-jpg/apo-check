@@ -105,10 +105,10 @@ export interface StepMeta {
 }
 
 export const STEPS: StepMeta[] = [
-  { id: "schedule", title: "アポ日時", short: "日時" },
-  { id: "customer", title: "お客様情報", short: "お客様" },
-  { id: "qualify", title: "ヒアリング内容", short: "ヒアリング" },
-  { id: "confirm", title: "最終確認", short: "完了" },
+  { id: "schedule", title: "アポ日時", short: "アポ日時" },
+  { id: "customer", title: "お客様情報", short: "お客様情報" },
+  { id: "qualify", title: "詳細確認", short: "詳細確認" },
+  { id: "confirm", title: "最終確認", short: "最終確認" },
 ]
 
 export interface FieldError {
