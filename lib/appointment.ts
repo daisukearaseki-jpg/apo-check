@@ -54,6 +54,23 @@ export const emptyForm: AppointmentForm = {
 
 export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const
 
+const JST = "Asia/Tokyo"
+
+// 日本時間の本日（YYYY-MM-DD）
+export function getMinAppointmentDate(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: JST,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now)
+}
+
+export function isPastDate(date: string): boolean {
+  if (!date) return false
+  return date < getMinAppointmentDate()
+}
+
 // 日付(YYYY-MM-DD)から曜日ラベルを取得
 export function getWeekdayLabel(date: string): string {
   if (!date) return ""
@@ -149,6 +166,9 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
 
   if (step === "schedule") {
     req("date", "日付を選択してください")
+    if (form.date && isPastDate(form.date)) {
+      errors.push({ field: "date", message: "本日以降の日付を選択してください" })
+    }
     if (form.date && getSlotCategory(form.date) === "none") {
       errors.push({ field: "date", message: "火・水は予約枠がありません。別の日を選択してください" })
     }

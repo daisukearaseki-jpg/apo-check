@@ -18,7 +18,9 @@ import {
   getTimeSlots,
   getWeekdayLabel,
   getSlotCategory,
+  getMinAppointmentDate,
   isHoliday,
+  isPastDate,
   validateStep,
   formatPhone,
 } from "@/lib/appointment"
@@ -55,6 +57,10 @@ export function AppointmentWizard() {
 
   // 日付変更時: 曜日を自動判定し、区分が変わるため時間選択をリセット
   function handleDateChange(date: string) {
+    if (date && isPastDate(date)) {
+      toast.error("本日以降の日付を選択してください")
+      return
+    }
     const weekday = getWeekdayLabel(date)
     const slots = getTimeSlots(date)
     setForm((prev) => ({
@@ -190,6 +196,7 @@ export function AppointmentWizard() {
               <Input
                 id="date"
                 type="date"
+                min={getMinAppointmentDate()}
                 value={form.date}
                 onChange={(e) => handleDateChange(e.target.value)}
                 className="h-12 text-base"
