@@ -50,7 +50,7 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = toDateString(viewYear, viewMonth, day)
-      if (date < minDate) {
+      if (date < minDate || getSlotCategory(date) === "none") {
         result.push(null)
       } else {
         result.push({ day, date })
@@ -110,10 +110,13 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
       </div>
 
       <div className="grid grid-cols-7 gap-1" role="grid" aria-label="アポ日付">
-        {WEEKDAYS.map((w) => (
+        {WEEKDAYS.map((w, i) => (
           <div
             key={w}
-            className="py-1 text-center text-xs font-semibold text-muted-foreground"
+            className={cn(
+              "py-1 text-center text-xs font-semibold text-muted-foreground",
+              (i === 2 || i === 3) && "invisible",
+            )}
             role="columnheader"
           >
             {w}
@@ -126,7 +129,6 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
           }
 
           const selected = value === cell.date
-          const noSlots = getSlotCategory(cell.date) === "none"
           const holiday = isHoliday(cell.date)
 
           return (
@@ -135,15 +137,13 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
               type="button"
               role="gridcell"
               aria-selected={selected}
-              aria-label={`${cell.date}${holiday ? " 祝日" : ""}${noSlots ? " 予約不可" : ""}`}
+              aria-label={`${cell.date}${holiday ? " 祝日" : ""}`}
               onClick={() => onChange(cell.date)}
               className={cn(
                 "relative flex aspect-square flex-col items-center justify-center rounded-lg border-2 text-sm font-semibold transition-colors active:scale-[0.97]",
                 selected
                   ? "border-primary bg-primary text-primary-foreground"
-                  : noSlots
-                    ? "border-border/60 bg-muted/40 text-muted-foreground"
-                    : "border-border bg-card text-foreground",
+                  : "border-border bg-card text-foreground",
               )}
             >
               {cell.day}
