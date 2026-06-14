@@ -76,6 +76,7 @@ export function ConfirmStep({
         <Row label="氏名" value={`${form.lastName} ${form.firstName}`.trim() || "未入力"} />
         <Row label="電話" value={form.phone || "未入力"} />
         <Row label="住所" value={form.address || "未入力"} />
+        <Row label="Google プラスコード" value={form.plusCode || "未入力"} />
       </SummaryBlock>
 
       {/* ヒアリング内容 */}

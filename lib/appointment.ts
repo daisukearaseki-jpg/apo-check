@@ -12,6 +12,7 @@ export interface AppointmentForm {
   firstName: string
   phone: string
   address: string
+  plusCode: string
   // ステップ3: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
@@ -37,6 +38,7 @@ export const emptyForm: AppointmentForm = {
   firstName: "",
   phone: "",
   address: DEFAULT_ADDRESS,
+  plusCode: "",
   isBuildingOwner: "",
   consentDisclosure: "",
   electricityOver8000: "",

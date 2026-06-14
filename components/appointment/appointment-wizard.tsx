@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, ClipboardCheck, RotateCcw } from "lucide-react"
+import { ChevronLeft, ChevronRight, ClipboardCheck, MapPin, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,7 @@ import {
   validateStep,
   formatPhone,
 } from "@/lib/appointment"
+import { encodePlusCode, normalizePlusCode } from "@/lib/plus-code"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
@@ -36,6 +37,7 @@ export function AppointmentWizard() {
   const [completed, setCompleted] = useState<StepId[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [photo, setPhoto] = useState<PhotoAttachment | null>(null)
+  const [locating, setLocating] = useState(false)
 
   const current = STEPS[stepIndex]
   const errorMap = useMemo(() => {
@@ -129,6 +131,28 @@ export function AppointmentWizard() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function handleGetPlusCode() {
+    if (!navigator.geolocation) {
+      toast.error("この端末では位置情報を取得できません")
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        update("plusCode", encodePlusCode(pos.coords.latitude, pos.coords.longitude))
+        setLocating(false)
+        toast.success("プラスコードを取得しました")
+      },
+      () => {
+        setLocating(false)
+        toast.error("位置情報の取得に失敗しました", {
+          description: "ブラウザの位置情報を許可してください",
+        })
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    )
   }
 
   function handleReset() {
@@ -248,6 +272,27 @@ export function AppointmentWizard() {
                 rows={2}
                 className="text-base"
               />
+            </Field>
+            <Field label="Google プラスコード" htmlFor="plusCode">
+              <div className="flex flex-col gap-2">
+                <Input
+                  id="plusCode"
+                  value={form.plusCode}
+                  onChange={(e) => update("plusCode", normalizePlusCode(e.target.value))}
+                  placeholder="例: 8Q7X+4R"
+                  className="h-12 text-base"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGetPlusCode}
+                  disabled={locating}
+                  className="h-11 text-base"
+                >
+                  <MapPin className="size-4" />
+                  {locating ? "取得中..." : "現在地から取得"}
+                </Button>
+              </div>
             </Field>
           </Card>
         )}
