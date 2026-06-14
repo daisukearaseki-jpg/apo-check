@@ -252,32 +252,6 @@ export function AppointmentWizard() {
                 className="text-base"
               />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="大人の人数" htmlFor="adultCount" error={errorMap.adultCount}>
-                <Input
-                  id="adultCount"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  value={form.adultCount}
-                  onChange={(e) => update("adultCount", e.target.value)}
-                  placeholder="2"
-                  className="h-12 text-base"
-                />
-              </Field>
-              <Field label="子供の人数" htmlFor="childCount" error={errorMap.childCount}>
-                <Input
-                  id="childCount"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  value={form.childCount}
-                  onChange={(e) => update("childCount", e.target.value)}
-                  placeholder="1"
-                  className="h-12 text-base"
-                />
-              </Field>
-            </div>
           </Card>
         )}
 

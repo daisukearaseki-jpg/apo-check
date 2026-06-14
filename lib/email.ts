@@ -55,7 +55,6 @@ export function buildAppointmentEmail(form: AppointmentForm) {
     line("氏名", name),
     line("電話", form.phone),
     line("住所", form.address),
-    line("人数", `大人 ${form.adultCount || "0"}人 / 子供 ${form.childCount || "0"}人`),
     "",
     "━━━━━━━━━━━━━━━━",
     "■ ヒアリング内容",

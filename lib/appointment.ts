@@ -12,8 +12,6 @@ export interface AppointmentForm {
   firstName: string
   phone: string
   address: string
-  adultCount: string
-  childCount: string
   // ステップ3: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
@@ -39,8 +37,6 @@ export const emptyForm: AppointmentForm = {
   firstName: "",
   phone: "",
   address: DEFAULT_ADDRESS,
-  adultCount: "",
-  childCount: "",
   isBuildingOwner: "",
   consentDisclosure: "",
   electricityOver8000: "",
@@ -166,12 +162,6 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
       errors.push({ field: "phone", message: "電話番号は10〜11桁で入力してください" })
     }
     req("address", "住所を入力してください")
-    if (!form.adultCount.trim()) {
-      errors.push({ field: "adultCount", message: "大人の人数を入力してください" })
-    }
-    if (!form.childCount.trim()) {
-      errors.push({ field: "childCount", message: "子供の人数を入力してください" })
-    }
   }
 
   if (step === "qualify") {

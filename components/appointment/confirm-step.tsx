@@ -70,14 +70,6 @@ export function ConfirmStep({
         <Row label="氏名" value={`${form.lastName} ${form.firstName}`.trim() || "未入力"} />
         <Row label="電話" value={form.phone || "未入力"} />
         <Row label="住所" value={form.address || "未入力"} />
-        <Row
-          label="人数"
-          value={
-            form.adultCount || form.childCount
-              ? `大人 ${form.adultCount || "0"}人 / 子供 ${form.childCount || "0"}人`
-              : "未入力"
-          }
-        />
       </SummaryBlock>
 
       {/* ヒアリング内容 */}
