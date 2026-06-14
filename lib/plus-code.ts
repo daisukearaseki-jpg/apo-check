@@ -1,5 +1,8 @@
 import { OpenLocationCode } from "open-location-code"
 
+export const PLUS_CODE_LABEL =
+  "下記文字列をGoogleMAPで検索してください。住居表示に関係なくピンポイントで場所を特定できます。"
+
 const olc = new OpenLocationCode()
 
 export function encodePlusCode(lat: number, lng: number): string {

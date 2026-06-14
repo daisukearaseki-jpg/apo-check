@@ -22,7 +22,7 @@ import {
   validateStep,
   formatPhone,
 } from "@/lib/appointment"
-import { encodePlusCode, normalizePlusCode } from "@/lib/plus-code"
+import { encodePlusCode, normalizePlusCode, PLUS_CODE_LABEL } from "@/lib/plus-code"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
@@ -273,7 +273,7 @@ export function AppointmentWizard() {
                 className="text-base"
               />
             </Field>
-            <Field label="Google プラスコード" htmlFor="plusCode">
+            <Field label={PLUS_CODE_LABEL} htmlFor="plusCode">
               <div className="flex flex-col gap-2">
                 <Input
                   id="plusCode"

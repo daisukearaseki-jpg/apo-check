@@ -15,7 +15,7 @@ interface FieldProps {
 export function Field({ label, htmlFor, error, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
+      <Label htmlFor={htmlFor} className="text-sm font-medium leading-relaxed text-foreground">
         {label}
       </Label>
       {children}

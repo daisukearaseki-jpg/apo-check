@@ -12,6 +12,7 @@ import {
   NG_ANSWERS,
 } from "@/lib/appointment"
 import type { PhotoAttachment } from "@/lib/photo"
+import { PLUS_CODE_LABEL } from "@/lib/plus-code"
 
 interface ConfirmStepProps {
   form: AppointmentForm
@@ -76,7 +77,17 @@ export function ConfirmStep({
         <Row label="氏名" value={`${form.lastName} ${form.firstName}`.trim() || "未入力"} />
         <Row label="電話" value={form.phone || "未入力"} />
         <Row label="住所" value={form.address || "未入力"} />
-        <Row label="Google プラスコード" value={form.plusCode || "未入力"} />
+        <div className="py-1.5">
+          <p className="text-sm text-muted-foreground">{PLUS_CODE_LABEL}</p>
+          <p
+            className={cn(
+              "mt-1 text-right text-sm font-medium",
+              !form.plusCode ? "text-destructive" : "text-foreground",
+            )}
+          >
+            {form.plusCode || "未入力"}
+          </p>
+        </div>
       </SummaryBlock>
 
       {/* ヒアリング内容 */}
