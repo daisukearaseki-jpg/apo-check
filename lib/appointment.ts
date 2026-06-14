@@ -2,6 +2,8 @@ import * as holidayJp from "@holiday-jp/holiday_jp"
 
 export type YesNo = "yes" | "no" | ""
 
+export type YesNoUnknown = "yes" | "no" | "unknown" | ""
+
 export interface AppointmentForm {
   // ステップ1: アポ日時
   date: string
@@ -16,7 +18,8 @@ export interface AppointmentForm {
   // ステップ3: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
-  electricityOver8000: YesNo
+  electricityOver8000: YesNoUnknown
+  electricityAmount: string
   ageUnder75: YesNo
   solarConsidered: YesNo
   solarConsideredTime: string
@@ -42,6 +45,7 @@ export const emptyForm: AppointmentForm = {
   isBuildingOwner: "",
   consentDisclosure: "",
   electricityOver8000: "",
+  electricityAmount: "",
   ageUnder75: "",
   solarConsidered: "",
   solarConsideredTime: "",
@@ -180,13 +184,17 @@ export function formatPhone(value: string): string {
   return value.replace(/[^\d-]/g, "")
 }
 
+export function formatElectricityAmount(value: string): string {
+  return value.replace(/[^\d]/g, "")
+}
+
 export function isValidPhone(value: string): boolean {
   const d = digitsOnly(value)
   return d.length >= 10 && d.length <= 11
 }
 
 // 適格項目: NGとなる回答 (商談を進められない可能性が高い回答)
-export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo>> = {
+export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesNoUnknown>> = {
   isBuildingOwner: "no",
   consentDisclosure: "no",
   electricityOver8000: "no",
@@ -231,6 +239,9 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
     req("isBuildingOwner", "建物オーナーかどうかを選択してください")
     req("consentDisclosure", "設置写真と発電データの公開について選択してください")
     req("electricityOver8000", "電気代の確認を選択してください")
+    if (form.electricityOver8000 === "yes" && !form.electricityAmount.trim()) {
+      errors.push({ field: "electricityAmount", message: "月額の電気代を入力してください" })
+    }
     req("ageUnder75", "年齢の確認を選択してください")
     req("solarConsidered", "ソーラーシステムの検討有無を選択してください")
     if (form.solarConsidered === "yes") {

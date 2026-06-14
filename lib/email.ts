@@ -1,9 +1,16 @@
-import { type AppointmentForm, type YesNo } from "./appointment"
+import { type AppointmentForm, type YesNo, type YesNoUnknown } from "./appointment"
 import { plusCodeMapsUrl, PLUS_CODE_LABEL } from "./plus-code"
 
 function yn(v: YesNo): string {
   if (v === "yes") return "はい"
   if (v === "no") return "いいえ"
+  return "未入力"
+}
+
+function ynu(v: YesNoUnknown): string {
+  if (v === "yes") return "はい"
+  if (v === "no") return "いいえ"
+  if (v === "unknown") return "不明"
   return "未入力"
 }
 
@@ -19,7 +26,10 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
   const hearingLines = [
     line("建物オーナー", yn(form.isBuildingOwner)),
     line("設置写真と発電データの公開", yn(form.consentDisclosure)),
-    line("電気代 8,000円以上", yn(form.electricityOver8000)),
+    line("電気代 8,000円以上", ynu(form.electricityOver8000)),
+    ...(form.electricityOver8000 === "yes"
+      ? [line("月額の電気代", form.electricityAmount ? `${form.electricityAmount}円` : "未入力")]
+      : []),
     line("75歳以下", yn(form.ageUnder75)),
     line(
       "ソーラー検討",

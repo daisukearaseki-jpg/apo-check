@@ -9,6 +9,7 @@ import { PhotoCapture } from "./photo-capture"
 import {
   type AppointmentForm,
   type YesNo,
+  type YesNoUnknown,
   NG_ANSWERS,
 } from "@/lib/appointment"
 import type { PhotoAttachment } from "@/lib/photo"
@@ -30,6 +31,13 @@ function yn(v: YesNo): string {
   return "未入力"
 }
 
+function ynu(v: YesNoUnknown): string {
+  if (v === "yes") return "はい"
+  if (v === "no") return "いいえ"
+  if (v === "unknown") return "不明"
+  return "未入力"
+}
+
 export function ConfirmStep({
   form,
   photo,
@@ -42,29 +50,32 @@ export function ConfirmStep({
   const qualifyItems: { label: string; value: YesNo; key: keyof AppointmentForm }[] = [
     { label: "建物オーナー", value: form.isBuildingOwner, key: "isBuildingOwner" },
     { label: "設置写真と発電データの公開", value: form.consentDisclosure, key: "consentDisclosure" },
-    { label: "電気代 8,000円以上", value: form.electricityOver8000, key: "electricityOver8000" },
     { label: "75歳以下", value: form.ageUnder75, key: "ageUnder75" },
   ]
 
   const ngList = qualifyItems.filter((it) => NG_ANSWERS[it.key] === it.value)
+  const electricityNg = form.electricityOver8000 === "no"
 
   return (
     <div className="flex flex-col gap-4">
       {/* 適格チェックの警告 */}
-      {ngList.length > 0 && (
+      {ngList.length > 0 || electricityNg ? (
         <div className="flex items-start gap-2.5 rounded-xl border-2 border-destructive bg-destructive/5 p-4">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />
           <div className="text-sm">
             <p className="font-bold text-destructive">要確認: 条件に合わない回答があります</p>
             <p className="mt-0.5 text-foreground">
-              {ngList.map((it) => it.label).join(" / ")}
+              {[
+                ...ngList.map((it) => it.label),
+                ...(electricityNg ? ["電気代 8,000円以上"] : []),
+              ].join(" / ")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               そのまま登録できますが、上長への確認を推奨します。
             </p>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* 日時 */}
       <SummaryBlock title="アポ日時" onEdit={() => onJump(0)}>
@@ -113,6 +124,28 @@ export function ConfirmStep({
             </div>
           )
         })}
+        <div className="flex items-center justify-between py-1.5">
+          <span className="text-sm text-muted-foreground">電気代 8,000円以上</span>
+          <span
+            className={cn(
+              "flex items-center gap-1 text-sm font-semibold",
+              electricityNg ? "text-destructive" : "text-foreground",
+            )}
+          >
+            {electricityNg ? (
+              <AlertTriangle className="size-3.5" />
+            ) : (
+              <CheckCircle2 className="size-3.5 text-primary" />
+            )}
+            {ynu(form.electricityOver8000)}
+          </span>
+        </div>
+        {form.electricityOver8000 === "yes" && (
+          <Row
+            label="月額の電気代"
+            value={form.electricityAmount ? `${form.electricityAmount}円` : "未入力"}
+          />
+        )}
         <div className="flex items-center justify-between py-1.5">
           <span className="text-sm text-muted-foreground">ソーラー検討</span>
           <span className="text-sm font-semibold text-foreground">

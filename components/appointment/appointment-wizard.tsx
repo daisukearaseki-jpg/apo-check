@@ -21,11 +21,13 @@ import {
   isHoliday,
   validateStep,
   formatPhone,
+  formatElectricityAmount,
 } from "@/lib/appointment"
 import { encodePlusCode, normalizePlusCode, PLUS_CODE_LABEL } from "@/lib/plus-code"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
+import { YesNoUnknownToggle } from "./yes-no-unknown-toggle"
 import { ChipSelect } from "./chip-select"
 import { ConfirmStep } from "./confirm-step"
 import { AppointmentDatePicker } from "./date-picker"
@@ -337,15 +339,34 @@ export function AppointmentWizard() {
                 />
               </Field>
             </Card>
-            <Card className="flex flex-col gap-3 p-5">
+            <Card className="flex flex-col gap-4 p-5">
               <Field label="電気代は月8,000円以上ですか?" error={errorMap.electricityOver8000}>
-                <YesNoToggle
+                <YesNoUnknownToggle
                   name="電気代確認"
                   value={form.electricityOver8000}
-                  onChange={(v) => update("electricityOver8000", v)}
+                  onChange={(v) => {
+                    update("electricityOver8000", v)
+                    if (v !== "yes") update("electricityAmount", "")
+                  }}
                   warnOnNo
                 />
               </Field>
+              {form.electricityOver8000 === "yes" && (
+                <div className="flex flex-col gap-4 border-t border-border pt-4">
+                  <Field label="月額の電気代（円）" htmlFor="electricityAmount" error={errorMap.electricityAmount}>
+                    <Input
+                      id="electricityAmount"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      value={form.electricityAmount}
+                      onChange={(e) => update("electricityAmount", formatElectricityAmount(e.target.value))}
+                      placeholder="12000"
+                      className="h-12 text-base"
+                    />
+                  </Field>
+                </div>
+              )}
             </Card>
             <Card className="flex flex-col gap-3 p-5">
               <Field label="ご家族に75歳以下の方はいらっしゃいますか?" error={errorMap.ageUnder75}>
