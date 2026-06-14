@@ -2,9 +2,6 @@
 
 import { AlertTriangle, CheckCircle2, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Field } from "./field"
-import { YesNoToggle } from "./yes-no-toggle"
-import { Textarea } from "@/components/ui/textarea"
 import { PhotoCapture } from "./photo-capture"
 import {
   type AppointmentForm,
@@ -18,9 +15,6 @@ interface ConfirmStepProps {
   form: AppointmentForm
   photo: PhotoAttachment | null
   onChangePhoto: (value: PhotoAttachment | null) => void
-  errorMap: Partial<Record<keyof AppointmentForm, string>>
-  onChangeHasQuestions: (v: YesNo) => void
-  onChangeQuestionDetail: (v: string) => void
   onJump: (stepIndex: number) => void
 }
 
@@ -40,9 +34,6 @@ export function ConfirmStep({
   form,
   photo,
   onChangePhoto,
-  errorMap,
-  onChangeHasQuestions,
-  onChangeQuestionDetail,
   onJump,
 }: ConfirmStepProps) {
   const qualifyItems: { label: string; value: YesNo; key: keyof AppointmentForm }[] = [
@@ -148,42 +139,30 @@ export function ConfirmStep({
           </>
         )}
         <Row label="立面図の有無" value={form.elevationDrawing || "未入力"} />
+        <Row
+          label="聞きたい事・ご心配な事"
+          value={
+            form.hasQuestions === "yes"
+              ? "あり"
+              : form.hasQuestions === "no"
+                ? "なし"
+                : "未入力"
+          }
+        />
+        {form.hasQuestions === "yes" && (
+          <Row label="内容" value={form.questionDetail || "未入力"} />
+        )}
       </SummaryBlock>
 
-      {/* 写真添付 */}
+      {/* 建物の外観写真 */}
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
         <div>
-          <h3 className="text-sm font-bold text-foreground">写真添付</h3>
+          <h3 className="text-sm font-bold text-foreground">建物の外観写真(1枚)</h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            1枚まで撮影できます。送信時にメールへ添付されます。
+            お客様に許可を頂いてから、場所が分かりやすいように遠目から建物の写真を撮影してください。
           </p>
         </div>
         <PhotoCapture value={photo} onChange={onChangePhoto} />
-      </div>
-
-      {/* 質問事項 */}
-      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5">
-        <Field label="お客様からの質問はありますか?" error={errorMap.hasQuestions}>
-          <YesNoToggle
-            name="質問事項の有無"
-            value={form.hasQuestions}
-            onChange={onChangeHasQuestions}
-            yesLabel="あり"
-            noLabel="なし"
-          />
-        </Field>
-        {form.hasQuestions === "yes" && (
-          <Field label="質問内容" htmlFor="questionDetail" error={errorMap.questionDetail}>
-            <Textarea
-              id="questionDetail"
-              value={form.questionDetail}
-              onChange={(e) => onChangeQuestionDetail(e.target.value)}
-              placeholder="お客様から受けた質問を記入"
-              rows={3}
-              className="text-base"
-            />
-          </Field>
-        )}
       </div>
     </div>
   )

@@ -422,6 +422,35 @@ export function AppointmentWizard() {
                 />
               </Field>
             </Card>
+            <Card className="flex flex-col gap-4 p-5">
+              <Field
+                label="無料シュミレーションを作るにあたり、先に聞いておきたい事や、ご心配な事はありますか?"
+                error={errorMap.hasQuestions}
+              >
+                <YesNoToggle
+                  name="聞きたい事・ご心配な事"
+                  value={form.hasQuestions}
+                  onChange={(v) => {
+                    update("hasQuestions", v)
+                    if (v !== "yes") update("questionDetail", "")
+                  }}
+                  yesLabel="あり"
+                  noLabel="なし"
+                />
+              </Field>
+              {form.hasQuestions === "yes" && (
+                <Field label="内容" htmlFor="questionDetail" error={errorMap.questionDetail}>
+                  <Textarea
+                    id="questionDetail"
+                    value={form.questionDetail}
+                    onChange={(e) => update("questionDetail", e.target.value)}
+                    placeholder="お客様から聞いた内容を記入"
+                    rows={3}
+                    className="text-base"
+                  />
+                </Field>
+              )}
+            </Card>
           </div>
         )}
 
@@ -430,9 +459,6 @@ export function AppointmentWizard() {
             form={form}
             photo={photo}
             onChangePhoto={setPhoto}
-            errorMap={errorMap}
-            onChangeHasQuestions={(v) => update("hasQuestions", v)}
-            onChangeQuestionDetail={(v) => update("questionDetail", v)}
             onJump={(i) => {
               setErrors([])
               setStepIndex(i)

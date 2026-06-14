@@ -252,12 +252,9 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
       }
     }
     req("elevationDrawing", "立面図の有無を選択してください")
-  }
-
-  if (step === "confirm") {
-    req("hasQuestions", "質問事項の有無を選択してください")
+    req("hasQuestions", "聞きたい事・ご心配な事の有無を選択してください")
     if (form.hasQuestions === "yes" && !form.questionDetail.trim()) {
-      errors.push({ field: "questionDetail", message: "質問内容を入力してください" })
+      errors.push({ field: "questionDetail", message: "内容を入力してください" })
     }
   }
 

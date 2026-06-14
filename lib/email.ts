@@ -41,12 +41,14 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
         ]
       : []),
     line("立面図の有無", form.elevationDrawing || "未入力"),
+    line(
+      "聞きたい事・ご心配な事",
+      form.hasQuestions === "yes" ? "あり" : form.hasQuestions === "no" ? "なし" : "未入力",
+    ),
+    ...(form.hasQuestions === "yes"
+      ? [line("内容", form.questionDetail || "未入力")]
+      : []),
   ]
-
-  const questionLines =
-    form.hasQuestions === "yes"
-      ? [line("質問の有無", "あり"), line("質問内容", form.questionDetail)]
-      : [line("質問の有無", form.hasQuestions === "no" ? "なし" : "未入力")]
 
   const text = [
     "【アポ取得アプリ】新規登録",
@@ -76,11 +78,6 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
     "■ 詳細確認",
     "━━━━━━━━━━━━━━━━",
     ...hearingLines,
-    "",
-    "━━━━━━━━━━━━━━━━",
-    "■ 質問事項",
-    "━━━━━━━━━━━━━━━━",
-    ...questionLines,
     "",
     line("添付写真", hasPhoto ? "1枚（メールに添付）" : "なし"),
   ].join("\n")
