@@ -18,7 +18,7 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
 
   const hearingLines = [
     line("建物オーナー", yn(form.isBuildingOwner)),
-    line("情報公開の承諾", yn(form.consentDisclosure)),
+    line("設置写真と発電データの公開", yn(form.consentDisclosure)),
     line("電気代 8,000円以上", yn(form.electricityOver8000)),
     line("75歳以下", yn(form.ageUnder75)),
     line(

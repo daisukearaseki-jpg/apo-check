@@ -229,7 +229,7 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
 
   if (step === "qualify") {
     req("isBuildingOwner", "建物オーナーかどうかを選択してください")
-    req("consentDisclosure", "情報公開の承諾を選択してください")
+    req("consentDisclosure", "設置写真と発電データの公開について選択してください")
     req("electricityOver8000", "電気代の確認を選択してください")
     req("ageUnder75", "年齢の確認を選択してください")
     req("solarConsidered", "ソーラーシステムの検討有無を選択してください")

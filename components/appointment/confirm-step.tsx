@@ -41,7 +41,7 @@ export function ConfirmStep({
 }: ConfirmStepProps) {
   const qualifyItems: { label: string; value: YesNo; key: keyof AppointmentForm }[] = [
     { label: "建物オーナー", value: form.isBuildingOwner, key: "isBuildingOwner" },
-    { label: "情報公開の承諾", value: form.consentDisclosure, key: "consentDisclosure" },
+    { label: "設置写真と発電データの公開", value: form.consentDisclosure, key: "consentDisclosure" },
     { label: "電気代 8,000円以上", value: form.electricityOver8000, key: "electricityOver8000" },
     { label: "75歳以下", value: form.ageUnder75, key: "ageUnder75" },
   ]

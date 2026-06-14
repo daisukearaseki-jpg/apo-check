@@ -328,9 +328,9 @@ export function AppointmentWizard() {
               </Field>
             </Card>
             <Card className="flex flex-col gap-3 p-5">
-              <Field label="情報公開に承諾いただけますか?" error={errorMap.consentDisclosure}>
+              <Field label="設置写真と発電データの公開に承諾いただけますか?" error={errorMap.consentDisclosure}>
                 <YesNoToggle
-                  name="情報公開承諾"
+                  name="設置写真と発電データの公開承諾"
                   value={form.consentDisclosure}
                   onChange={(v) => update("consentDisclosure", v)}
                   warnOnNo
