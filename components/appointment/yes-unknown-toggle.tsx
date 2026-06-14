@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, HelpCircle } from "lucide-react"
+import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { YesUnknown } from "@/lib/appointment"
 
@@ -11,9 +11,9 @@ interface YesUnknownToggleProps {
 }
 
 export function YesUnknownToggle({ value, onChange, name }: YesUnknownToggleProps) {
-  const options: { id: YesUnknown; label: string; icon: typeof Check }[] = [
+  const options: { id: YesUnknown; label: string; icon?: typeof Check }[] = [
     { id: "yes", label: "はい", icon: Check },
-    { id: "unknown", label: "不明", icon: HelpCircle },
+    { id: "unknown", label: "不明" },
   ]
 
   return (
@@ -35,7 +35,7 @@ export function YesUnknownToggle({ value, onChange, name }: YesUnknownToggleProp
                 : "border-border bg-card text-foreground",
             )}
           >
-            <Icon className="size-5" />
+            {Icon ? <Icon className="size-5" /> : null}
             {label}
           </button>
         )

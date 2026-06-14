@@ -41,7 +41,6 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
         ]
       : []),
     line("立面図の有無", form.elevationDrawing || "未入力"),
-    line("建物外観の撮影許可", yn(form.exteriorPhotoPermission)),
   ]
 
   const questionLines =

@@ -422,15 +422,6 @@ export function AppointmentWizard() {
                 />
               </Field>
             </Card>
-            <Card className="flex flex-col gap-3 p-5">
-              <Field label="建物外観の撮影許可" error={errorMap.exteriorPhotoPermission}>
-                <YesNoToggle
-                  name="建物外観の撮影許可"
-                  value={form.exteriorPhotoPermission}
-                  onChange={(v) => update("exteriorPhotoPermission", v)}
-                />
-              </Field>
-            </Card>
           </div>
         )}
 

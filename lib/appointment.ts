@@ -27,7 +27,6 @@ export interface AppointmentForm {
   solarConsideredTime: string
   solarConsideredReason: string
   elevationDrawing: string
-  exteriorPhotoPermission: YesNo
   // ステップ4: 質問事項
   hasQuestions: YesNo
   questionDetail: string
@@ -53,7 +52,6 @@ export const emptyForm: AppointmentForm = {
   solarConsideredTime: "",
   solarConsideredReason: "",
   elevationDrawing: "",
-  exteriorPhotoPermission: "",
   hasQuestions: "",
   questionDetail: "",
 }
@@ -254,7 +252,6 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
       }
     }
     req("elevationDrawing", "立面図の有無を選択してください")
-    req("exteriorPhotoPermission", "建物外観の撮影許可を選択してください")
   }
 
   if (step === "confirm") {
