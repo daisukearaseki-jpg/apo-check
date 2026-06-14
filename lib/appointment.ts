@@ -66,9 +66,26 @@ export function getMinAppointmentDate(now = new Date()): string {
   }).format(now)
 }
 
-export function isPastDate(date: string): boolean {
+export function isPastDate(date: string, now = new Date()): boolean {
   if (!date) return false
-  return date < getMinAppointmentDate()
+  return date < getMinAppointmentDate(now)
+}
+
+// 日本時間の現在時刻（HH:MM）
+export function getCurrentTimeJst(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: JST,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(now)
+}
+
+export function isPastDateTime(date: string, time: string, now = new Date()): boolean {
+  if (!date || !time) return false
+  if (isPastDate(date, now)) return true
+  if (date > getMinAppointmentDate(now)) return false
+  return time <= getCurrentTimeJst(now)
 }
 
 // 日付(YYYY-MM-DD)から曜日ラベルを取得
@@ -110,9 +127,27 @@ export function getSlotCategory(date: string): SlotCategory {
   return "none" // 火・水
 }
 
-// 日付に応じた予約可能な時間枠を返す
-export function getTimeSlots(date: string): string[] {
+// 日付に応じた時間枠（曜日区分のみ）
+function getBaseTimeSlots(date: string): string[] {
   return SLOTS_BY_CATEGORY[getSlotCategory(date)]
+}
+
+// 現在日時以前を除いた、選択可能な時間枠
+export function getAvailableTimeSlots(date: string, now = new Date()): string[] {
+  if (!date || isPastDate(date, now) || getSlotCategory(date) === "none") return []
+  const slots = getBaseTimeSlots(date)
+  if (date > getMinAppointmentDate(now)) return slots
+  const currentTime = getCurrentTimeJst(now)
+  return slots.filter((slot) => slot > currentTime)
+}
+
+export function isBookableDate(date: string, now = new Date()): boolean {
+  return getAvailableTimeSlots(date, now).length > 0
+}
+
+/** @deprecated getAvailableTimeSlots を使用 */
+export function getTimeSlots(date: string): string[] {
+  return getBaseTimeSlots(date)
 }
 
 export type StepId = "schedule" | "customer" | "qualify" | "confirm"
@@ -172,7 +207,13 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
     if (form.date && getSlotCategory(form.date) === "none") {
       errors.push({ field: "date", message: "火・水は予約枠がありません。別の日を選択してください" })
     }
+    if (form.date && !isBookableDate(form.date)) {
+      errors.push({ field: "date", message: "この日付に選択可能な時間がありません。別の日を選択してください" })
+    }
     req("time", "時間を選択してください")
+    if (form.date && form.time && !getAvailableTimeSlots(form.date).includes(form.time)) {
+      errors.push({ field: "time", message: "過去の時間は選択できません" })
+    }
   }
 
   if (step === "customer") {

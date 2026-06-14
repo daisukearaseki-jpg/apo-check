@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import {
   WEEKDAYS,
   getMinAppointmentDate,
+  getAvailableTimeSlots,
   getSlotCategory,
   isHoliday,
 } from "@/lib/appointment"
@@ -35,6 +36,14 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
   const today = useMemo(() => getTodayParts(), [])
   const [viewYear, setViewYear] = useState(today.year)
   const [viewMonth, setViewMonth] = useState(today.month)
+  const [nowTick, setNowTick] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowTick(Date.now()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const now = useMemo(() => new Date(nowTick), [nowTick])
 
   const minIndex = monthIndex(today.year, today.month)
   const viewIndex = monthIndex(viewYear, viewMonth)
@@ -50,7 +59,7 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = toDateString(viewYear, viewMonth, day)
-      if (date < minDate || getSlotCategory(date) === "none") {
+      if (date < minDate || getSlotCategory(date) === "none" || getAvailableTimeSlots(date, now).length === 0) {
         result.push(null)
       } else {
         result.push({ day, date })
@@ -59,7 +68,7 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
 
     while (result.length % 7 !== 0) result.push(null)
     return result
-  }, [viewYear, viewMonth])
+  }, [viewYear, viewMonth, now])
 
   function goPrevMonth() {
     if (!canGoPrev) return

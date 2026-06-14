@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ChevronLeft, ChevronRight, ClipboardCheck, MapPin, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
@@ -15,7 +15,7 @@ import {
   type StepId,
   emptyForm,
   STEPS,
-  getTimeSlots,
+  getAvailableTimeSlots,
   getWeekdayLabel,
   getSlotCategory,
   isHoliday,
@@ -39,6 +39,7 @@ export function AppointmentWizard() {
   const [submitting, setSubmitting] = useState(false)
   const [photo, setPhoto] = useState<PhotoAttachment | null>(null)
   const [locating, setLocating] = useState(false)
+  const [nowTick, setNowTick] = useState(() => Date.now())
 
   const current = STEPS[stepIndex]
   const errorMap = useMemo(() => {
@@ -52,12 +53,30 @@ export function AppointmentWizard() {
     if (errorMap[key]) setErrors((prev) => prev.filter((e) => e.field !== key))
   }
 
-  const timeSlots = useMemo(() => getTimeSlots(form.date), [form.date])
+  useEffect(() => {
+    if (current.id !== "schedule") return
+    const timer = setInterval(() => setNowTick(Date.now()), 60_000)
+    return () => clearInterval(timer)
+  }, [current.id])
+
+  const now = useMemo(() => new Date(nowTick), [nowTick])
+  const timeSlots = useMemo(
+    () => getAvailableTimeSlots(form.date, now),
+    [form.date, now],
+  )
+
+  // 時刻経過で選択中の時間が無効になったら解除
+  useEffect(() => {
+    if (!form.date || !form.time) return
+    if (!getAvailableTimeSlots(form.date, now).includes(form.time)) {
+      setForm((prev) => ({ ...prev, time: "" }))
+    }
+  }, [form.date, form.time, now])
 
   // 日付変更時: 曜日を自動判定し、区分が変わるため時間選択をリセット
   function handleDateChange(date: string) {
     const weekday = getWeekdayLabel(date)
-    const slots = getTimeSlots(date)
+    const slots = getAvailableTimeSlots(date, now)
     setForm((prev) => ({
       ...prev,
       date,
@@ -211,8 +230,8 @@ export function AppointmentWizard() {
                   先に日付を選択してください
                 </p>
               ) : timeSlots.length === 0 ? (
-                <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-6 text-center text-sm font-medium text-destructive">
-                  火・水は予約枠がありません。
+                <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                  選択可能な時間がありません。
                   <br />
                   別の日付を選択してください。
                 </p>
