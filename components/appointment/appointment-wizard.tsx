@@ -308,7 +308,7 @@ export function AppointmentWizard() {
                   className="h-11 text-base"
                 >
                   <MapPin className="size-4" />
-                  {locating ? "取得中..." : "現在地から取得"}
+                  {locating ? "取得中..." : "現在地を取得"}
                 </Button>
               </div>
             </Field>
