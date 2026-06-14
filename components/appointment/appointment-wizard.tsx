@@ -369,7 +369,7 @@ export function AppointmentWizard() {
               )}
             </Card>
             <Card className="flex flex-col gap-3 p-5">
-              <Field label="ご家族に75歳以下の方はいらっしゃいますか?" error={errorMap.ageUnder75}>
+              <Field label="ご同居のご家族に75歳以下の方はいらっしゃいますか?" error={errorMap.ageUnder75}>
                 <YesNoToggle
                   name="年齢確認"
                   value={form.ageUnder75}

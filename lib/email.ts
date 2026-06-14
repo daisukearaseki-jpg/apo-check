@@ -30,7 +30,7 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
     ...(form.electricityOver8000 === "yes"
       ? [line("月額の電気代", form.electricityAmount ? `${form.electricityAmount}円` : "未入力")]
       : []),
-    line("75歳以下", yn(form.ageUnder75)),
+    line("ご同居の75歳以下", yn(form.ageUnder75)),
     line(
       "ソーラー検討",
       form.solarConsidered === "yes" ? "あり" : form.solarConsidered === "no" ? "なし" : "未入力",

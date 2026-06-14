@@ -50,7 +50,7 @@ export function ConfirmStep({
   const qualifyItems: { label: string; value: YesNo; key: keyof AppointmentForm }[] = [
     { label: "建物オーナー", value: form.isBuildingOwner, key: "isBuildingOwner" },
     { label: "設置写真と発電データの公開", value: form.consentDisclosure, key: "consentDisclosure" },
-    { label: "75歳以下", value: form.ageUnder75, key: "ageUnder75" },
+    { label: "ご同居の75歳以下", value: form.ageUnder75, key: "ageUnder75" },
   ]
 
   const ngList = qualifyItems.filter((it) => NG_ANSWERS[it.key] === it.value)
