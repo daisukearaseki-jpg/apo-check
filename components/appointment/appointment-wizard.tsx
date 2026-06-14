@@ -18,9 +18,7 @@ import {
   getTimeSlots,
   getWeekdayLabel,
   getSlotCategory,
-  getMinAppointmentDate,
   isHoliday,
-  isPastDate,
   validateStep,
   formatPhone,
 } from "@/lib/appointment"
@@ -30,6 +28,7 @@ import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
 import { ChipSelect } from "./chip-select"
 import { ConfirmStep } from "./confirm-step"
+import { AppointmentDatePicker } from "./date-picker"
 import type { PhotoAttachment } from "@/lib/photo"
 
 export function AppointmentWizard() {
@@ -57,10 +56,6 @@ export function AppointmentWizard() {
 
   // 日付変更時: 曜日を自動判定し、区分が変わるため時間選択をリセット
   function handleDateChange(date: string) {
-    if (date && isPastDate(date)) {
-      toast.error("本日以降の日付を選択してください")
-      return
-    }
     const weekday = getWeekdayLabel(date)
     const slots = getTimeSlots(date)
     setForm((prev) => ({
@@ -193,13 +188,10 @@ export function AppointmentWizard() {
         {current.id === "schedule" && (
           <Card className="flex flex-col gap-5 p-5">
             <Field label="アポ日付" htmlFor="date" error={errorMap.date}>
-              <Input
+              <AppointmentDatePicker
                 id="date"
-                type="date"
-                min={getMinAppointmentDate()}
                 value={form.date}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="h-12 text-base"
+                onChange={handleDateChange}
               />
               {form.date && form.weekday && (
                 <p className="mt-2 text-sm font-medium text-foreground">
