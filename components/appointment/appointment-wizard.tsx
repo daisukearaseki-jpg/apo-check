@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, ClipboardCheck, MapPin, RotateCcw } from "lucide-react"
+import { AlertCircle, ChevronLeft, ChevronRight, ClipboardCheck, MapPin, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,7 @@ import {
   formatPhone,
   formatElectricityAmount,
 } from "@/lib/appointment"
-import { encodePlusCode, PLUS_CODE_LABEL } from "@/lib/plus-code"
+import { encodePlusCode } from "@/lib/plus-code"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
@@ -305,27 +305,24 @@ export function AppointmentWizard() {
                 className="text-base"
               />
             </Field>
-            <Field label={PLUS_CODE_LABEL} htmlFor="plusCode" error={errorMap.plusCode}>
-              <div className="flex flex-col gap-2">
-                <Input
-                  id="plusCode"
-                  readOnly
-                  value={form.plusCode}
-                  placeholder="例: 8Q7X+4R"
-                  className="h-12 bg-muted text-base"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleGetPlusCode}
-                  disabled={locating}
-                  className="h-11 text-base"
-                >
-                  <MapPin className="size-4" />
-                  {locating ? "取得中..." : "現在地を取得(玄関前で押す)"}
-                </Button>
-              </div>
-            </Field>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant={form.plusCode ? "default" : "outline"}
+                onClick={handleGetPlusCode}
+                disabled={locating}
+                className="h-12 w-full text-base"
+              >
+                <MapPin className="size-4" />
+                {locating ? "取得中..." : "現在地を取得(玄関前で押す)"}
+              </Button>
+              {errorMap.plusCode && (
+                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                  <AlertCircle className="size-3.5 shrink-0" />
+                  {errorMap.plusCode}
+                </p>
+              )}
+            </div>
           </Card>
         )}
 
