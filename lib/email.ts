@@ -1,5 +1,5 @@
 import { type AppointmentForm, type YesNo } from "./appointment"
-import { plusCodeMapsUrl, PLUS_CODE_LABEL } from "./plus-code"
+import { plusCodeMapsUrl } from "./plus-code"
 
 function yn(v: YesNo): string {
   if (v === "yes") return "はい"
@@ -67,12 +67,8 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
     line("電話", form.phone),
     line("住所", form.address),
     ...(form.plusCode.trim()
-      ? [
-          PLUS_CODE_LABEL,
-          form.plusCode,
-          line("地図リンク", plusCodeMapsUrl(form.plusCode)),
-        ]
-      : [line("Google MAP", "未入力")]),
+      ? [line("地図リンク", plusCodeMapsUrl(form.plusCode))]
+      : [line("地図リンク", "未入力")]),
     "",
     "━━━━━━━━━━━━━━━━",
     "■ 詳細確認",
