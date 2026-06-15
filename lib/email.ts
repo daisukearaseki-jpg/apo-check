@@ -1,4 +1,4 @@
-import { type AppointmentForm, type YesNo } from "./appointment"
+import { type AppointmentForm, type YesNo, digitsOnly } from "./appointment"
 import { plusCodeMapsUrl } from "./plus-code"
 
 function yn(v: YesNo): string {
@@ -15,6 +15,42 @@ function yu(v: string): string {
 
 function line(label: string, value: string): string {
   return `・${label}：${value}`
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+function phoneText(phone: string): string {
+  return phone.trim() || "未入力"
+}
+
+function phoneHtml(phone: string): string {
+  const display = escapeHtml(phoneText(phone))
+  const digits = digitsOnly(phone)
+  if (!digits) return display
+  return `<a href="tel:${digits}">${display}</a>`
+}
+
+function urlHtml(url: string): string {
+  const escaped = escapeHtml(url)
+  return `<a href="${escaped}">${escaped}</a>`
+}
+
+function lineHtml(label: string, valueHtml: string): string {
+  return `<p style="margin:0.25em 0">・${escapeHtml(label)}：${valueHtml}</p>`
+}
+
+function sectionTitle(title: string): string {
+  return `<p style="margin:1em 0 0.25em;font-weight:bold">■ ${escapeHtml(title)}</p>`
+}
+
+function divider(): string {
+  return `<p style="margin:0.5em 0;color:#888">━━━━━━━━━━━━━━━━</p>`
 }
 
 export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
@@ -64,7 +100,7 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
     "■ お客様情報",
     "━━━━━━━━━━━━━━━━",
     line("氏名", name),
-    line("電話", form.phone),
+    line("電話", phoneText(form.phone)),
     line("住所", form.address),
     ...(form.plusCode.trim()
       ? [line("地図リンク", plusCodeMapsUrl(form.plusCode))]
@@ -78,5 +114,38 @@ export function buildAppointmentEmail(form: AppointmentForm, hasPhoto = false) {
     line("添付写真", hasPhoto ? "1枚（メールに添付）" : "なし"),
   ].join("\n")
 
-  return { subject, text }
+  const mapUrl = form.plusCode.trim() ? plusCodeMapsUrl(form.plusCode) : ""
+
+  const html = [
+    `<div style="font-family:sans-serif;font-size:14px;line-height:1.6;color:#111">`,
+    `<p style="margin:0.25em 0;font-weight:bold">【アポ取得アプリ】新規登録</p>`,
+    lineHtml("登録日時", escapeHtml(registeredAt)),
+    divider(),
+    sectionTitle("アポ日時"),
+    divider(),
+    lineHtml("日付", escapeHtml(`${form.date}（${form.weekday}）`)),
+    lineHtml("時間", escapeHtml(form.time)),
+    divider(),
+    sectionTitle("お客様情報"),
+    divider(),
+    lineHtml("氏名", escapeHtml(name)),
+    lineHtml("電話", phoneHtml(form.phone)),
+    lineHtml("住所", escapeHtml(form.address)),
+    mapUrl
+      ? lineHtml("地図リンク", urlHtml(mapUrl))
+      : lineHtml("地図リンク", escapeHtml("未入力")),
+    divider(),
+    sectionTitle("詳細確認"),
+    divider(),
+    ...hearingLines.map((entry) => {
+      const colon = entry.indexOf("：")
+      const label = colon >= 0 ? entry.slice(1, colon) : entry
+      const value = colon >= 0 ? entry.slice(colon + 1) : ""
+      return lineHtml(label, escapeHtml(value))
+    }),
+    lineHtml("添付写真", escapeHtml(hasPhoto ? "1枚（メールに添付）" : "なし")),
+    `</div>`,
+  ].join("")
+
+  return { subject, text, html }
 }

@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
   const to = process.env.NOTIFICATION_EMAIL ?? "daisuke.araseki@gmail.com"
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
-  const { subject, text } = buildAppointmentEmail(form, true)
+  const { subject, text, html } = buildAppointmentEmail(form, true)
 
   const idempotencyKey = `appointment/${form.date}/${form.time}/${form.phone.replace(/\D/g, "")}`
 
@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       to: [to],
       subject,
       text,
+      html,
       attachments: [
         {
           filename: photo.filename || "apo-photo.jpg",
