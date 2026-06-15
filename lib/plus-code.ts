@@ -13,6 +13,12 @@ export function normalizePlusCode(value: string): string {
   return value.trim().toUpperCase().replace(/\s+/g, "")
 }
 
+export function isValidPlusCode(value: string): boolean {
+  const code = normalizePlusCode(value)
+  if (!code) return false
+  return olc.isFull(code)
+}
+
 export function plusCodeMapsUrl(code: string): string {
   const normalized = normalizePlusCode(code)
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`plus_code:${normalized}`)}`

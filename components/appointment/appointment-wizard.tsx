@@ -23,7 +23,7 @@ import {
   formatPhone,
   formatElectricityAmount,
 } from "@/lib/appointment"
-import { encodePlusCode, normalizePlusCode, PLUS_CODE_LABEL } from "@/lib/plus-code"
+import { encodePlusCode, PLUS_CODE_LABEL } from "@/lib/plus-code"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
@@ -40,6 +40,7 @@ export function AppointmentWizard() {
   const [completed, setCompleted] = useState<StepId[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [photo, setPhoto] = useState<PhotoAttachment | null>(null)
+  const [photoError, setPhotoError] = useState("")
   const [locating, setLocating] = useState(false)
   const [nowTick, setNowTick] = useState(() => Date.now())
 
@@ -127,12 +128,21 @@ export function AppointmentWizard() {
       return
     }
 
+    if (!photo?.data) {
+      setPhotoError("建物の外観写真を撮影してください")
+      toast.error("写真が未添付です", {
+        description: "建物の外観写真を撮影してから登録してください",
+      })
+      return
+    }
+
+    setPhotoError("")
     setSubmitting(true)
     try {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(photo ? { ...form, photo } : form),
+        body: JSON.stringify({ ...form, photo }),
       })
       const body = await res.json().catch(() => ({}))
 
@@ -164,6 +174,7 @@ export function AppointmentWizard() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         update("plusCode", encodePlusCode(pos.coords.latitude, pos.coords.longitude))
+        setErrors((prev) => prev.filter((e) => e.field !== "plusCode"))
         setLocating(false)
         toast.success("プラスコードを取得しました")
       },
@@ -180,6 +191,7 @@ export function AppointmentWizard() {
   function handleReset() {
     setForm(emptyForm)
     setPhoto(null)
+    setPhotoError("")
     setErrors([])
     setCompleted([])
     setStepIndex(0)
@@ -293,14 +305,14 @@ export function AppointmentWizard() {
                 className="text-base"
               />
             </Field>
-            <Field label={PLUS_CODE_LABEL} htmlFor="plusCode">
+            <Field label={PLUS_CODE_LABEL} htmlFor="plusCode" error={errorMap.plusCode}>
               <div className="flex flex-col gap-2">
                 <Input
                   id="plusCode"
+                  readOnly
                   value={form.plusCode}
-                  onChange={(e) => update("plusCode", normalizePlusCode(e.target.value))}
-                  placeholder="例: 8Q7X+4R"
-                  className="h-12 text-base"
+                  placeholder="「現在地を取得(玄関前で押す)」ボタンを押してください ※必須"
+                  className="h-12 bg-muted text-base"
                 />
                 <Button
                   type="button"
@@ -310,7 +322,7 @@ export function AppointmentWizard() {
                   className="h-11 text-base"
                 >
                   <MapPin className="size-4" />
-                  {locating ? "取得中..." : "現在地を取得"}
+                  {locating ? "取得中..." : "現在地を取得(玄関前で押す)"}
                 </Button>
               </div>
             </Field>
@@ -458,7 +470,11 @@ export function AppointmentWizard() {
           <ConfirmStep
             form={form}
             photo={photo}
-            onChangePhoto={setPhoto}
+            photoError={photoError}
+            onChangePhoto={(value) => {
+              setPhoto(value)
+              if (value?.data) setPhotoError("")
+            }}
             onJump={(i) => {
               setErrors([])
               setStepIndex(i)
@@ -502,7 +518,7 @@ export function AppointmentWizard() {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || !photo}
               className="h-12 flex-[2] text-base font-bold"
             >
               <ClipboardCheck className="size-5" />

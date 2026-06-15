@@ -1,5 +1,7 @@
 import * as holidayJp from "@holiday-jp/holiday_jp"
 
+import { isValidPlusCode } from "./plus-code"
+
 export type YesNo = "yes" | "no" | ""
 
 export type YesNoUnknown = "yes" | "no" | "unknown" | ""
@@ -193,6 +195,11 @@ export function isValidPhone(value: string): boolean {
   return d.length >= 10 && d.length <= 11
 }
 
+export function isValidAddress(value: string): boolean {
+  const trimmed = value.trim()
+  return trimmed.length > 0 && trimmed !== DEFAULT_ADDRESS
+}
+
 // 適格項目: NGとなる回答 (商談を進められない可能性が高い回答)
 export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesUnknown>> = {
   isBuildingOwner: "no",
@@ -231,7 +238,22 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
     } else if (!isValidPhone(form.phone)) {
       errors.push({ field: "phone", message: "電話番号は10〜11桁で入力してください" })
     }
-    req("address", "住所を入力してください")
+    if (!form.address.trim()) {
+      errors.push({ field: "address", message: "住所を入力してください" })
+    } else if (!isValidAddress(form.address)) {
+      errors.push({ field: "address", message: "都道府県以外も含めた住所を入力してください" })
+    }
+    if (!form.plusCode.trim()) {
+      errors.push({
+        field: "plusCode",
+        message: "「現在地を取得(玄関前で押す)」ボタンでGoogleプラスコードを取得してください",
+      })
+    } else if (!isValidPlusCode(form.plusCode)) {
+      errors.push({
+        field: "plusCode",
+        message: "Googleプラスコードを正しく取得してください",
+      })
+    }
   }
 
   if (step === "qualify") {
