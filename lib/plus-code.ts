@@ -21,5 +21,6 @@ export function isValidPlusCode(value: string): boolean {
 
 export function plusCodeMapsUrl(code: string): string {
   const normalized = normalizePlusCode(code)
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`plus_code:${normalized}`)}`
+  // Google Maps はプラスコード文字列を query に直接渡す（plus_code: 接頭辞は不可）
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(normalized)}`
 }
