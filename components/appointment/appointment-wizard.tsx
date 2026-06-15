@@ -311,7 +311,7 @@ export function AppointmentWizard() {
                   id="plusCode"
                   readOnly
                   value={form.plusCode}
-                  placeholder="「現在地を取得(玄関前で押す)」ボタンを押してください ※必須"
+                  placeholder="例: 8Q7X+4R"
                   className="h-12 bg-muted text-base"
                 />
                 <Button
