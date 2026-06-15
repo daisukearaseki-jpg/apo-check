@@ -9,6 +9,19 @@ interface SubmitBody extends AppointmentForm {
   photo?: PhotoAttachment
 }
 
+const DEFAULT_NOTIFICATION_RECIPIENTS = [
+  "daisuke.araseki@gmail.com",
+  "matsui@smart-re-house.com",
+] as const
+
+function getNotificationRecipients(): string[] {
+  const configured = process.env.NOTIFICATION_EMAIL?.trim()
+  const extras = configured
+    ? configured.split(",").map((e) => e.trim()).filter(Boolean)
+    : []
+  return [...new Set([...DEFAULT_NOTIFICATION_RECIPIENTS, ...extras])]
+}
+
 export async function POST(req: Request) {
   if (!process.env.RESEND_API_KEY) {
     return NextResponse.json(
@@ -48,7 +61,7 @@ export async function POST(req: Request) {
     )
   }
 
-  const to = process.env.NOTIFICATION_EMAIL ?? "daisuke.araseki@gmail.com"
+  const to = getNotificationRecipients()
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
   const { subject, text, html } = buildAppointmentEmail(form, true)
 
@@ -57,7 +70,7 @@ export async function POST(req: Request) {
   const { data, error } = await resend.emails.send(
     {
       from,
-      to: [to],
+      to,
       subject,
       text,
       html,
