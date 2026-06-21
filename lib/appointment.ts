@@ -1,7 +1,5 @@
 import * as holidayJp from "@holiday-jp/holiday_jp"
 
-import { isValidPlusCode } from "./plus-code"
-
 export type YesNo = "yes" | "no" | ""
 
 export type YesNoUnknown = "yes" | "no" | "unknown" | ""
@@ -10,16 +8,11 @@ export type YesUnknown = "yes" | "unknown" | ""
 
 export interface AppointmentForm {
   // ステップ1: アポ日時
+  lastName: string
   date: string
   weekday: string
   time: string
-  // ステップ2: お客様情報
-  lastName: string
-  firstName: string
-  phone: string
-  address: string
-  plusCode: string
-  // ステップ3: ヒアリング内容
+  // ステップ2: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
   electricityOver8000: YesUnknown
@@ -29,22 +22,16 @@ export interface AppointmentForm {
   solarConsideredTime: string
   solarConsideredReason: string
   elevationDrawing: string
-  // ステップ4: 質問事項
+  // ステップ3: 質問事項
   hasQuestions: YesNo
   questionDetail: string
 }
 
-export const DEFAULT_ADDRESS = "東京都"
-
 export const emptyForm: AppointmentForm = {
+  lastName: "",
   date: "",
   weekday: "",
   time: "",
-  lastName: "",
-  firstName: "",
-  phone: "",
-  address: DEFAULT_ADDRESS,
-  plusCode: "",
   isBuildingOwner: "",
   consentDisclosure: "",
   electricityOver8000: "",
@@ -156,7 +143,7 @@ export function getTimeSlots(date: string): string[] {
   return getBaseTimeSlots(date)
 }
 
-export type StepId = "schedule" | "customer" | "qualify" | "confirm"
+export type StepId = "schedule" | "qualify" | "confirm"
 
 export interface StepMeta {
   id: StepId
@@ -166,7 +153,6 @@ export interface StepMeta {
 
 export const STEPS: StepMeta[] = [
   { id: "schedule", title: "アポ日時", short: "アポ日時" },
-  { id: "customer", title: "お客様情報", short: "お客様情報" },
   { id: "qualify", title: "詳細確認", short: "詳細確認" },
   { id: "confirm", title: "最終確認", short: "最終確認" },
 ]
@@ -176,28 +162,8 @@ export interface FieldError {
   message: string
 }
 
-// 半角数字のみ抽出
-export function digitsOnly(value: string): string {
-  return value.replace(/[^\d]/g, "")
-}
-
-// 電話番号の簡易フォーマット (ハイフンは保持しつつ数字以外を除去)
-export function formatPhone(value: string): string {
-  return value.replace(/[^\d-]/g, "")
-}
-
 export function formatElectricityAmount(value: string): string {
   return value.replace(/[^\d]/g, "")
-}
-
-export function isValidPhone(value: string): boolean {
-  const d = digitsOnly(value)
-  return d.length >= 10 && d.length <= 11
-}
-
-export function isValidAddress(value: string): boolean {
-  const trimmed = value.trim()
-  return trimmed.length > 0 && trimmed !== DEFAULT_ADDRESS
 }
 
 // 適格項目: NGとなる回答 (商談を進められない可能性が高い回答)
@@ -214,6 +180,7 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
   }
 
   if (step === "schedule") {
+    req("lastName", "お客様名（姓）を入力してください")
     req("date", "日付を選択してください")
     if (form.date && isPastDate(form.date)) {
       errors.push({ field: "date", message: "本日以降の日付を選択してください" })
@@ -227,32 +194,6 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
     req("time", "時間を選択してください")
     if (form.date && form.time && !getAvailableTimeSlots(form.date).includes(form.time)) {
       errors.push({ field: "time", message: "過去の時間は選択できません" })
-    }
-  }
-
-  if (step === "customer") {
-    req("lastName", "姓を入力してください")
-    req("firstName", "名を入力してください")
-    if (!form.phone.trim()) {
-      errors.push({ field: "phone", message: "電話番号を入力してください" })
-    } else if (!isValidPhone(form.phone)) {
-      errors.push({ field: "phone", message: "電話番号は10〜11桁で入力してください" })
-    }
-    if (!form.address.trim()) {
-      errors.push({ field: "address", message: "住所を入力してください" })
-    } else if (!isValidAddress(form.address)) {
-      errors.push({ field: "address", message: "都道府県以外も含めた住所を入力してください" })
-    }
-    if (!form.plusCode.trim()) {
-      errors.push({
-        field: "plusCode",
-        message: "「現在地を取得(玄関前で押す)」ボタンでGoogleプラスコードを取得してください",
-      })
-    } else if (!isValidPlusCode(form.plusCode)) {
-      errors.push({
-        field: "plusCode",
-        message: "Googleプラスコードを正しく取得してください",
-      })
     }
   }
 

@@ -2,20 +2,14 @@
 
 import { AlertTriangle, CheckCircle2, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Field } from "./field"
-import { PhotoCapture } from "./photo-capture"
 import {
   type AppointmentForm,
   type YesNo,
   NG_ANSWERS,
 } from "@/lib/appointment"
-import type { PhotoAttachment } from "@/lib/photo"
 
 interface ConfirmStepProps {
   form: AppointmentForm
-  photo: PhotoAttachment | null
-  photoError?: string
-  onChangePhoto: (value: PhotoAttachment | null) => void
   onJump: (stepIndex: number) => void
 }
 
@@ -33,9 +27,6 @@ function yu(v: string): string {
 
 export function ConfirmStep({
   form,
-  photo,
-  photoError,
-  onChangePhoto,
   onJump,
 }: ConfirmStepProps) {
   const qualifyItems: { label: string; value: YesNo; key: keyof AppointmentForm }[] = [
@@ -66,23 +57,13 @@ export function ConfirmStep({
 
       {/* 日時 */}
       <SummaryBlock title="アポ日時" onEdit={() => onJump(0)}>
+        <Row label="お客様名" value={form.lastName || "未入力"} />
         <Row label="日付" value={form.date ? `${form.date}（${form.weekday}）` : "未入力"} />
         <Row label="時間" value={form.time || "未入力"} />
       </SummaryBlock>
 
-      {/* お客様情報 */}
-      <SummaryBlock title="お客様情報" onEdit={() => onJump(1)}>
-        <Row label="氏名" value={`${form.lastName} ${form.firstName}`.trim() || "未入力"} />
-        <Row label="電話" value={form.phone || "未入力"} />
-        <Row label="住所" value={form.address || "未入力"} />
-        <Row
-          label="Googleプラスコード(現在地情報)"
-          value={form.plusCode || "未入力"}
-        />
-      </SummaryBlock>
-
       {/* ヒアリング内容 */}
-      <SummaryBlock title="詳細確認" onEdit={() => onJump(2)}>
+      <SummaryBlock title="詳細確認" onEdit={() => onJump(1)}>
         {qualifyItems.map((it) => {
           const isNg = NG_ANSWERS[it.key] === it.value
           return (
@@ -148,21 +129,6 @@ export function ConfirmStep({
           <Row label="内容" value={form.questionDetail || "未入力"} />
         )}
       </SummaryBlock>
-
-      {/* 建物の外観写真 */}
-      <div
-        className={cn(
-          "flex flex-col gap-3 rounded-xl border bg-card p-5",
-          photoError ? "border-destructive" : "border-border",
-        )}
-      >
-        <Field label="建物の外観写真(1枚) ※必須" error={photoError}>
-          <p className="-mt-1 text-xs text-muted-foreground">
-            お客様に許可を頂いてから、場所が分かりやすいように遠目から建物の写真を撮影してください。
-          </p>
-          <PhotoCapture value={photo} onChange={onChangePhoto} />
-        </Field>
-      </div>
     </div>
   )
 }

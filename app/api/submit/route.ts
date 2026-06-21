@@ -3,11 +3,6 @@ import { Resend } from "resend"
 
 import { type AppointmentForm, validateStep } from "@/lib/appointment"
 import { buildAppointmentEmail } from "@/lib/email"
-import type { PhotoAttachment } from "@/lib/photo"
-
-interface SubmitBody extends AppointmentForm {
-  photo?: PhotoAttachment
-}
 
 const DEFAULT_NOTIFICATION_RECIPIENTS = [
   "daisuke.araseki@gmail.com",
@@ -32,18 +27,15 @@ export async function POST(req: Request) {
 
   const resend = new Resend(process.env.RESEND_API_KEY)
 
-  let body: SubmitBody
+  let form: AppointmentForm
   try {
-    body = await req.json()
+    form = await req.json()
   } catch {
     return NextResponse.json({ error: "不正なリクエストです" }, { status: 400 })
   }
 
-  const { photo, ...form } = body
-
   const errors = [
     ...validateStep("schedule", form),
-    ...validateStep("customer", form),
     ...validateStep("qualify", form),
     ...validateStep("confirm", form),
   ]
@@ -54,18 +46,11 @@ export async function POST(req: Request) {
     )
   }
 
-  if (!photo?.data) {
-    return NextResponse.json(
-      { error: "建物の外観写真が添付されていません" },
-      { status: 422 },
-    )
-  }
-
   const to = getNotificationRecipients()
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
-  const { subject, text, html } = buildAppointmentEmail(form, true)
+  const { subject, text, html } = buildAppointmentEmail(form)
 
-  const idempotencyKey = `appointment/${form.date}/${form.time}/${form.phone.replace(/\D/g, "")}`
+  const idempotencyKey = `appointment/${form.date}/${form.time}/${form.lastName.trim()}`
 
   const { data, error } = await resend.emails.send(
     {
@@ -74,13 +59,6 @@ export async function POST(req: Request) {
       subject,
       text,
       html,
-      attachments: [
-        {
-          filename: photo.filename || "apo-photo.jpg",
-          content: photo.data,
-          contentType: photo.contentType || "image/jpeg",
-        },
-      ],
     },
     { idempotencyKey },
   )

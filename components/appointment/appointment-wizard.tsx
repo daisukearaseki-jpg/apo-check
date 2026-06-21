@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AlertCircle, ChevronLeft, ChevronRight, ClipboardCheck, MapPin, RotateCcw } from "lucide-react"
+import { ChevronLeft, ChevronRight, ClipboardCheck, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -20,10 +20,8 @@ import {
   getSlotCategory,
   isHoliday,
   validateStep,
-  formatPhone,
   formatElectricityAmount,
 } from "@/lib/appointment"
-import { encodePlusCode } from "@/lib/plus-code"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
@@ -31,7 +29,6 @@ import { YesUnknownToggle } from "./yes-unknown-toggle"
 import { ChipSelect } from "./chip-select"
 import { ConfirmStep } from "./confirm-step"
 import { AppointmentDatePicker } from "./date-picker"
-import type { PhotoAttachment } from "@/lib/photo"
 
 export function AppointmentWizard() {
   const [form, setForm] = useState<AppointmentForm>(emptyForm)
@@ -39,9 +36,6 @@ export function AppointmentWizard() {
   const [errors, setErrors] = useState<FieldError[]>([])
   const [completed, setCompleted] = useState<StepId[]>([])
   const [submitting, setSubmitting] = useState(false)
-  const [photo, setPhoto] = useState<PhotoAttachment | null>(null)
-  const [photoError, setPhotoError] = useState("")
-  const [locating, setLocating] = useState(false)
   const [nowTick, setNowTick] = useState(() => Date.now())
 
   const current = STEPS[stepIndex]
@@ -128,21 +122,12 @@ export function AppointmentWizard() {
       return
     }
 
-    if (!photo?.data) {
-      setPhotoError("建物の外観写真を撮影してください")
-      toast.error("写真が未添付です", {
-        description: "建物の外観写真を撮影してから登録してください",
-      })
-      return
-    }
-
-    setPhotoError("")
     setSubmitting(true)
     try {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, photo }),
+        body: JSON.stringify(form),
       })
       const body = await res.json().catch(() => ({}))
 
@@ -153,7 +138,7 @@ export function AppointmentWizard() {
         return
       }
 
-      const description = `${form.lastName} ${form.firstName} 様 / ${form.date}(${form.weekday}) ${form.time}`
+      const description = `${form.lastName} 様 / ${form.date}(${form.weekday}) ${form.time}`
       toast.success("アポ情報を送信しました", { description })
       handleReset()
     } catch {
@@ -165,33 +150,8 @@ export function AppointmentWizard() {
     }
   }
 
-  function handleGetPlusCode() {
-    if (!navigator.geolocation) {
-      toast.error("この端末では位置情報を取得できません")
-      return
-    }
-    setLocating(true)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        update("plusCode", encodePlusCode(pos.coords.latitude, pos.coords.longitude))
-        setErrors((prev) => prev.filter((e) => e.field !== "plusCode"))
-        setLocating(false)
-        toast.success("プラスコードを取得しました")
-      },
-      () => {
-        setLocating(false)
-        toast.error("位置情報の取得に失敗しました", {
-          description: "ブラウザの位置情報を許可してください",
-        })
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
-    )
-  }
-
   function handleReset() {
     setForm(emptyForm)
-    setPhoto(null)
-    setPhotoError("")
     setErrors([])
     setCompleted([])
     setStepIndex(0)
@@ -220,6 +180,16 @@ export function AppointmentWizard() {
 
         {current.id === "schedule" && (
           <Card className="flex flex-col gap-5 p-5">
+            <Field label="お客様名（姓）" htmlFor="lastName" error={errorMap.lastName}>
+              <Input
+                id="lastName"
+                value={form.lastName}
+                onChange={(e) => update("lastName", e.target.value)}
+                placeholder="山田"
+                className="h-12 text-base"
+              />
+            </Field>
+
             <Field label="アポ日付" htmlFor="date" error={errorMap.date}>
               <AppointmentDatePicker
                 id="date"
@@ -259,70 +229,6 @@ export function AppointmentWizard() {
                 />
               )}
             </Field>
-          </Card>
-        )}
-
-        {current.id === "customer" && (
-          <Card className="flex flex-col gap-5 p-5">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="姓" htmlFor="lastName" error={errorMap.lastName}>
-                <Input
-                  id="lastName"
-                  value={form.lastName}
-                  onChange={(e) => update("lastName", e.target.value)}
-                  placeholder="山田"
-                  className="h-12 text-base"
-                />
-              </Field>
-              <Field label="名" htmlFor="firstName" error={errorMap.firstName}>
-                <Input
-                  id="firstName"
-                  value={form.firstName}
-                  onChange={(e) => update("firstName", e.target.value)}
-                  placeholder="太郎"
-                  className="h-12 text-base"
-                />
-              </Field>
-            </div>
-            <Field label="電話番号" htmlFor="phone" error={errorMap.phone}>
-              <Input
-                id="phone"
-                type="tel"
-                inputMode="tel"
-                value={form.phone}
-                onChange={(e) => update("phone", formatPhone(e.target.value))}
-                placeholder="09012345678"
-                className="h-12 text-base"
-              />
-            </Field>
-            <Field label="住所" htmlFor="address" error={errorMap.address}>
-              <Textarea
-                id="address"
-                value={form.address}
-                onChange={(e) => update("address", e.target.value)}
-                placeholder="渋谷区神宮前1-2-3 ○○マンション101"
-                rows={2}
-                className="text-base"
-              />
-            </Field>
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                variant={form.plusCode ? "default" : "outline"}
-                onClick={handleGetPlusCode}
-                disabled={locating}
-                className="h-12 w-full text-base"
-              >
-                <MapPin className="size-4" />
-                {locating ? "取得中..." : "現在地を取得(玄関前で押す)"}
-              </Button>
-              {errorMap.plusCode && (
-                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
-                  <AlertCircle className="size-3.5 shrink-0" />
-                  {errorMap.plusCode}
-                </p>
-              )}
-            </div>
           </Card>
         )}
 
@@ -466,12 +372,6 @@ export function AppointmentWizard() {
         {current.id === "confirm" && (
           <ConfirmStep
             form={form}
-            photo={photo}
-            photoError={photoError}
-            onChangePhoto={(value) => {
-              setPhoto(value)
-              if (value?.data) setPhotoError("")
-            }}
             onJump={(i) => {
               setErrors([])
               setStepIndex(i)
@@ -515,7 +415,7 @@ export function AppointmentWizard() {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting || !photo}
+              disabled={submitting}
               className="h-12 flex-[2] text-base font-bold"
             >
               <ClipboardCheck className="size-5" />
