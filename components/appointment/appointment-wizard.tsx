@@ -29,6 +29,7 @@ import { YesUnknownToggle } from "./yes-unknown-toggle"
 import { ChipSelect } from "./chip-select"
 import { ConfirmStep } from "./confirm-step"
 import { AppointmentDatePicker } from "./date-picker"
+import { MemberCombobox } from "./member-combobox"
 
 export function AppointmentWizard() {
   const [form, setForm] = useState<AppointmentForm>(emptyForm)
@@ -228,6 +229,42 @@ export function AppointmentWizard() {
                   columns={2}
                 />
               )}
+            </Field>
+
+            <Field label="アポ取得者" htmlFor="apoGetter" error={errorMap.apoGetter}>
+              <MemberCombobox
+                id="apoGetter"
+                value={form.apoGetter}
+                onChange={(v) => update("apoGetter", v)}
+              />
+            </Field>
+
+            <Field label="ペア" htmlFor="pair" error={errorMap.pair}>
+              <MemberCombobox
+                id="pair"
+                value={form.pair}
+                onChange={(v) => update("pair", v)}
+              />
+            </Field>
+
+            <Field label="ボイレコ番号" htmlFor="voirecoNumber" error={errorMap.voirecoNumber}>
+              <Input
+                id="voirecoNumber"
+                value={form.voirecoNumber}
+                onChange={(e) => update("voirecoNumber", e.target.value)}
+                placeholder="番号を入力"
+                className="h-12 text-base"
+              />
+            </Field>
+
+            <Field label="地図番号" htmlFor="mapNumber" error={errorMap.mapNumber}>
+              <Input
+                id="mapNumber"
+                value={form.mapNumber}
+                onChange={(e) => update("mapNumber", e.target.value)}
+                placeholder="番号を入力"
+                className="h-12 text-base"
+              />
             </Field>
           </Card>
         )}

@@ -60,6 +60,10 @@ export function ConfirmStep({
         <Row label="お客様名" value={form.lastName || "未入力"} />
         <Row label="日付" value={form.date ? `${form.date}（${form.weekday}）` : "未入力"} />
         <Row label="時間" value={form.time || "未入力"} />
+        <Row label="アポ取得者" value={form.apoGetter || "未入力"} />
+        <Row label="ペア" value={form.pair || "未入力"} />
+        <Row label="ボイレコ番号" value={form.voirecoNumber || "未入力"} />
+        <Row label="地図番号" value={form.mapNumber || "未入力"} />
       </SummaryBlock>
 
       {/* ヒアリング内容 */}

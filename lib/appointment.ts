@@ -12,6 +12,10 @@ export interface AppointmentForm {
   date: string
   weekday: string
   time: string
+  apoGetter: string
+  pair: string
+  voirecoNumber: string
+  mapNumber: string
   // ステップ2: ヒアリング内容
   isBuildingOwner: YesNo
   consentDisclosure: YesNo
@@ -27,11 +31,27 @@ export interface AppointmentForm {
   questionDetail: string
 }
 
+export const MEMBER_OPTIONS = [
+  "富田",
+  "宮田",
+  "内田",
+  "工藤",
+  "キンズマン",
+  "荒関",
+  "山本",
+  "早川",
+  "中村",
+] as const
+
 export const emptyForm: AppointmentForm = {
   lastName: "",
   date: "",
   weekday: "",
   time: "",
+  apoGetter: "",
+  pair: "",
+  voirecoNumber: "",
+  mapNumber: "",
   isBuildingOwner: "",
   consentDisclosure: "",
   electricityOver8000: "",
@@ -195,6 +215,10 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
     if (form.date && form.time && !getAvailableTimeSlots(form.date).includes(form.time)) {
       errors.push({ field: "time", message: "過去の時間は選択できません" })
     }
+    req("apoGetter", "アポ取得者を選択または入力してください")
+    req("pair", "ペアを選択または入力してください")
+    req("voirecoNumber", "ボイレコ番号を入力してください")
+    req("mapNumber", "地図番号を入力してください")
   }
 
   if (step === "qualify") {

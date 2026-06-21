@@ -48,7 +48,8 @@ export async function POST(req: Request) {
 
   const to = getNotificationRecipients()
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
-  const { subject, text, html } = buildAppointmentEmail(form)
+  const registeredAt = new Date()
+  const { subject, text, html } = buildAppointmentEmail(form, registeredAt)
 
   const idempotencyKey = `appointment/${form.date}/${form.time}/${form.lastName.trim()}`
 

@@ -36,10 +36,14 @@ function divider(): string {
   return `<p style="margin:0.5em 0;color:#888">━━━━━━━━━━━━━━━━</p>`
 }
 
-export function buildAppointmentEmail(form: AppointmentForm) {
+function formatRegisteredAt(date: Date): string {
+  return date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+}
+
+export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new Date()) {
   const name = form.lastName.trim()
   const subject = `【アポ取得】${name} 様 / ${form.date} ${form.time}`
-  const registeredAt = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+  const registeredAtLabel = formatRegisteredAt(registeredAt)
 
   const hearingLines = [
     line("建物オーナー", yn(form.isBuildingOwner)),
@@ -71,14 +75,19 @@ export function buildAppointmentEmail(form: AppointmentForm) {
 
   const text = [
     "【アポ取得アプリ】新規登録",
-    line("登録日時", registeredAt),
+    line("登録日時", registeredAtLabel),
     "",
     "━━━━━━━━━━━━━━━━",
     "■ アポ日時",
     "━━━━━━━━━━━━━━━━",
+    line("登録日時", registeredAtLabel),
     line("お客様名", name || "未入力"),
     line("日付", `${form.date}（${form.weekday}）`),
     line("時間", form.time),
+    line("アポ取得者", form.apoGetter || "未入力"),
+    line("ペア", form.pair || "未入力"),
+    line("ボイレコ番号", form.voirecoNumber || "未入力"),
+    line("地図番号", form.mapNumber || "未入力"),
     "",
     "━━━━━━━━━━━━━━━━",
     "■ 詳細確認",
@@ -89,13 +98,18 @@ export function buildAppointmentEmail(form: AppointmentForm) {
   const html = [
     `<div style="font-family:sans-serif;font-size:14px;line-height:1.6;color:#111">`,
     `<p style="margin:0.25em 0;font-weight:bold">【アポ取得アプリ】新規登録</p>`,
-    lineHtml("登録日時", escapeHtml(registeredAt)),
+    lineHtml("登録日時", escapeHtml(registeredAtLabel)),
     divider(),
     sectionTitle("アポ日時"),
     divider(),
+    lineHtml("登録日時", escapeHtml(registeredAtLabel)),
     lineHtml("お客様名", escapeHtml(name || "未入力")),
     lineHtml("日付", escapeHtml(`${form.date}（${form.weekday}）`)),
     lineHtml("時間", escapeHtml(form.time)),
+    lineHtml("アポ取得者", escapeHtml(form.apoGetter || "未入力")),
+    lineHtml("ペア", escapeHtml(form.pair || "未入力")),
+    lineHtml("ボイレコ番号", escapeHtml(form.voirecoNumber || "未入力")),
+    lineHtml("地図番号", escapeHtml(form.mapNumber || "未入力")),
     divider(),
     sectionTitle("詳細確認"),
     divider(),
