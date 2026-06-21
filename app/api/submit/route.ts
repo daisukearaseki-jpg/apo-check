@@ -10,12 +10,32 @@ const DEFAULT_NOTIFICATION_RECIPIENTS = [
   "matsui@smart-re-house.com",
 ] as const
 
-function getNotificationRecipients(): string[] {
+const RESEND_SANDBOX_RECIPIENT = "daisuke.araseki@gmail.com"
+
+function isResendSandboxFrom(from: string): boolean {
+  return from.includes("@resend.dev")
+}
+
+function getNotificationRecipients(from: string): string[] {
   const configured = process.env.NOTIFICATION_EMAIL?.trim()
   const extras = configured
     ? configured.split(",").map((e) => e.trim()).filter(Boolean)
     : []
-  return [...new Set([...DEFAULT_NOTIFICATION_RECIPIENTS, ...extras])]
+  const recipients = [...new Set([...DEFAULT_NOTIFICATION_RECIPIENTS, ...extras])]
+
+  if (!isResendSandboxFrom(from)) return recipients
+
+  // onboarding@resend.dev は Resend アカウント所有者へのテスト送信のみ可
+  const sandboxRecipient =
+    process.env.RESEND_SANDBOX_RECIPIENT?.trim() || RESEND_SANDBOX_RECIPIENT
+  const skipped = recipients.filter((email) => email !== sandboxRecipient)
+  if (skipped.length > 0) {
+    console.warn(
+      "Resend sandbox from address: skipping recipients until domain is verified:",
+      skipped.join(", "),
+    )
+  }
+  return [sandboxRecipient]
 }
 
 function buildIdempotencyKey(form: AppointmentForm): string {
@@ -48,8 +68,8 @@ export async function POST(req: Request) {
     )
   }
 
-  const to = getNotificationRecipients()
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
+  const to = getNotificationRecipients(from)
   const registeredAt = new Date()
   const { subject, text, html } = buildAppointmentEmail(form, registeredAt)
 
