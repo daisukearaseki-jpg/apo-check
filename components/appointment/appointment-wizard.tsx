@@ -181,12 +181,12 @@ export function AppointmentWizard() {
 
         {current.id === "schedule" && (
           <Card className="flex flex-col gap-5 p-5">
-            <Field label="お客様名（姓）" htmlFor="lastName" error={errorMap.lastName}>
+            <Field label="お客様名" htmlFor="lastName" error={errorMap.lastName}>
               <Input
                 id="lastName"
                 value={form.lastName}
                 onChange={(e) => update("lastName", e.target.value)}
-                placeholder="山田"
+                placeholder="お客様名"
                 className="h-12 text-base"
               />
             </Field>

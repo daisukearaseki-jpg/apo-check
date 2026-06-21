@@ -200,7 +200,7 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
   }
 
   if (step === "schedule") {
-    req("lastName", "お客様名（姓）を入力してください")
+    req("lastName", "お客様名を入力してください")
     req("date", "日付を選択してください")
     if (form.date && isPastDate(form.date)) {
       errors.push({ field: "date", message: "本日以降の日付を選択してください" })
