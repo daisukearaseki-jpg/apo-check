@@ -20,6 +20,8 @@ import {
   getSlotCategory,
   isHoliday,
   validateStep,
+  validateForm,
+  getStepIndexForField,
 } from "@/lib/appointment"
 import { clearFormDraft, loadFormDraft, saveFormDraft } from "@/lib/form-draft"
 import { Stepper } from "./stepper"
@@ -101,7 +103,7 @@ export function AppointmentWizard() {
   }
 
   function goNext() {
-    const found = validateStep(current.id, form)
+    const found = validateStep(current.id, form, now)
     if (found.length > 0) {
       setErrors(found)
       toast.error("未入力・誤りがあります", {
@@ -126,10 +128,18 @@ export function AppointmentWizard() {
   }
 
   async function handleSubmit() {
-    const found = validateStep("confirm", form)
+    const found = validateForm(form, now)
     if (found.length > 0) {
       setErrors(found)
-      toast.error("未入力の項目があります")
+      const first = found[0]
+      const targetStep = getStepIndexForField(first.field)
+      if (targetStep >= 0) {
+        setStepIndex(targetStep)
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      }
+      toast.error("未入力・誤りがあります", {
+        description: first.message,
+      })
       return
     }
 
@@ -143,9 +153,27 @@ export function AppointmentWizard() {
       const body = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        toast.error("送信に失敗しました", {
-          description: typeof body.error === "string" ? body.error : "通信エラーが発生しました",
-        })
+        if (res.status === 422 && Array.isArray(body.details) && body.details.length > 0) {
+          setErrors(body.details)
+          const first = body.details[0] as FieldError
+          const targetStep = getStepIndexForField(first.field)
+          if (targetStep >= 0) {
+            setStepIndex(targetStep)
+            window.scrollTo({ top: 0, behavior: "smooth" })
+          }
+          toast.error("入力内容に不備があります", {
+            description: first.message,
+          })
+          return
+        }
+
+        const description =
+          typeof body.details === "string"
+            ? body.details
+            : typeof body.error === "string"
+              ? body.error
+              : "通信エラーが発生しました"
+        toast.error("送信に失敗しました", { description })
         return
       }
 

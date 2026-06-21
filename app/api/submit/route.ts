@@ -1,7 +1,8 @@
+import { createHash } from "crypto"
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
 
-import { type AppointmentForm, validateStep } from "@/lib/appointment"
+import { type AppointmentForm, validateForm } from "@/lib/appointment"
 import { buildAppointmentEmail } from "@/lib/email"
 
 const DEFAULT_NOTIFICATION_RECIPIENTS = [
@@ -15,6 +16,11 @@ function getNotificationRecipients(): string[] {
     ? configured.split(",").map((e) => e.trim()).filter(Boolean)
     : []
   return [...new Set([...DEFAULT_NOTIFICATION_RECIPIENTS, ...extras])]
+}
+
+function buildIdempotencyKey(form: AppointmentForm): string {
+  const hash = createHash("sha256").update(JSON.stringify(form)).digest("hex").slice(0, 32)
+  return `appointment/${hash}`
 }
 
 export async function POST(req: Request) {
@@ -34,11 +40,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "不正なリクエストです" }, { status: 400 })
   }
 
-  const errors = [
-    ...validateStep("schedule", form),
-    ...validateStep("qualify", form),
-    ...validateStep("confirm", form),
-  ]
+  const errors = validateForm(form)
   if (errors.length > 0) {
     return NextResponse.json(
       { error: "入力内容に不備があります", details: errors },
@@ -51,7 +53,7 @@ export async function POST(req: Request) {
   const registeredAt = new Date()
   const { subject, text, html } = buildAppointmentEmail(form, registeredAt)
 
-  const idempotencyKey = `appointment/${form.date}/${form.time}/${form.lastName.trim()}`
+  const idempotencyKey = buildIdempotencyKey(form)
 
   const { data, error } = await resend.emails.send(
     {
@@ -66,8 +68,9 @@ export async function POST(req: Request) {
 
   if (error) {
     console.error("Resend error:", error)
+    const details = typeof error.message === "string" ? error.message : undefined
     return NextResponse.json(
-      { error: "メール送信に失敗しました。しばらくしてから再度お試しください。" },
+      { error: "メール送信に失敗しました", details },
       { status: 502 },
     )
   }

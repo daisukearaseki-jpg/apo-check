@@ -189,26 +189,30 @@ export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesUnknow
   ageUnder75: "no",
 }
 
-export function validateStep(step: StepId, form: AppointmentForm): FieldError[] {
+export function validateStep(
+  step: StepId,
+  form: AppointmentForm,
+  now = new Date(),
+): FieldError[] {
   const errors: FieldError[] = []
   const req = (field: keyof AppointmentForm, message: string) => {
-    if (!String(form[field]).trim()) errors.push({ field, message })
+    if (!String(form[field] ?? "").trim()) errors.push({ field, message })
   }
 
   if (step === "schedule") {
     req("lastName", "お客様名を入力してください")
     req("date", "日付を選択してください")
-    if (form.date && isPastDate(form.date)) {
+    if (form.date && isPastDate(form.date, now)) {
       errors.push({ field: "date", message: "本日以降の日付を選択してください" })
     }
     if (form.date && getSlotCategory(form.date) === "none") {
       errors.push({ field: "date", message: "火・水は予約枠がありません。別の日を選択してください" })
     }
-    if (form.date && !isBookableDate(form.date)) {
+    if (form.date && !isBookableDate(form.date, now)) {
       errors.push({ field: "date", message: "この日付に選択可能な時間がありません。別の日を選択してください" })
     }
     req("time", "時間を選択してください")
-    if (form.date && form.time && !getAvailableTimeSlots(form.date).includes(form.time)) {
+    if (form.date && form.time && !getAvailableTimeSlots(form.date, now).includes(form.time)) {
       errors.push({ field: "time", message: "過去の時間は選択できません" })
     }
     req("apoGetter", "アポ取得者を選択または入力してください")
@@ -242,4 +246,31 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
   }
 
   return errors
+}
+
+const SCHEDULE_FIELDS = new Set<keyof AppointmentForm>([
+  "lastName",
+  "date",
+  "weekday",
+  "time",
+  "apoGetter",
+  "pair",
+  "voirecoNumber",
+  "mapNumber",
+])
+
+export function getStepForField(field: keyof AppointmentForm): StepId {
+  return SCHEDULE_FIELDS.has(field) ? "schedule" : "qualify"
+}
+
+export function getStepIndexForField(field: keyof AppointmentForm): number {
+  const stepId = getStepForField(field)
+  return STEPS.findIndex((step) => step.id === stepId)
+}
+
+export function validateForm(form: AppointmentForm, now = new Date()): FieldError[] {
+  return [
+    ...validateStep("schedule", form, now),
+    ...validateStep("qualify", form, now),
+  ]
 }
