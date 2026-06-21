@@ -50,7 +50,7 @@ export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new 
     line("設置写真と発電データの公開", yn(form.consentDisclosure)),
     line("電気代 8,000円以上", yu(form.electricityOver8000)),
     ...(form.electricityOver8000 === "yes"
-      ? [line("月額の電気代", form.electricityAmount ? `${form.electricityAmount}円` : "未入力")]
+      ? [line("月額の電気代", form.electricityAmount || "未入力")]
       : []),
     line("ご同居の75歳以下", yn(form.ageUnder75)),
     line(
@@ -65,7 +65,7 @@ export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new 
       : []),
     line("立面図の有無", form.elevationDrawing || "未入力"),
     line(
-      "聞きたい事・ご心配な事",
+      "聞いておきたいこと、メモ",
       form.hasQuestions === "yes" ? "あり" : form.hasQuestions === "no" ? "なし" : "未入力",
     ),
     ...(form.hasQuestions === "yes"

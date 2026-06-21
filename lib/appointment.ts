@@ -182,10 +182,6 @@ export interface FieldError {
   message: string
 }
 
-export function formatElectricityAmount(value: string): string {
-  return value.replace(/[^\d]/g, "")
-}
-
 // 適格項目: NGとなる回答 (商談を進められない可能性が高い回答)
 export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesUnknown>> = {
   isBuildingOwner: "no",
@@ -239,7 +235,7 @@ export function validateStep(step: StepId, form: AppointmentForm): FieldError[] 
       }
     }
     req("elevationDrawing", "立面図の有無を選択してください")
-    req("hasQuestions", "聞きたい事・ご心配な事の有無を選択してください")
+    req("hasQuestions", "聞いておきたいこと、メモの有無を選択してください")
     if (form.hasQuestions === "yes" && !form.questionDetail.trim()) {
       errors.push({ field: "questionDetail", message: "内容を入力してください" })
     }

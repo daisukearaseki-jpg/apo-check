@@ -99,7 +99,7 @@ export function ConfirmStep({
         {form.electricityOver8000 === "yes" && (
           <Row
             label="月額の電気代"
-            value={form.electricityAmount ? `${form.electricityAmount}円` : "未入力"}
+            value={form.electricityAmount || "未入力"}
           />
         )}
         <div className="flex items-center justify-between py-1.5">
@@ -120,7 +120,7 @@ export function ConfirmStep({
         )}
         <Row label="立面図の有無" value={form.elevationDrawing || "未入力"} />
         <Row
-          label="聞きたい事・ご心配な事"
+          label="聞いておきたいこと、メモ"
           value={
             form.hasQuestions === "yes"
               ? "あり"

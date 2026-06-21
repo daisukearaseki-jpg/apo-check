@@ -20,8 +20,8 @@ import {
   getSlotCategory,
   isHoliday,
   validateStep,
-  formatElectricityAmount,
 } from "@/lib/appointment"
+import { clearFormDraft, loadFormDraft, saveFormDraft } from "@/lib/form-draft"
 import { Stepper } from "./stepper"
 import { Field } from "./field"
 import { YesNoToggle } from "./yes-no-toggle"
@@ -32,12 +32,22 @@ import { AppointmentDatePicker } from "./date-picker"
 import { MemberCombobox } from "./member-combobox"
 
 export function AppointmentWizard() {
-  const [form, setForm] = useState<AppointmentForm>(emptyForm)
-  const [stepIndex, setStepIndex] = useState(0)
+  const [form, setForm] = useState<AppointmentForm>(() => loadFormDraft()?.form ?? emptyForm)
+  const [stepIndex, setStepIndex] = useState(() => loadFormDraft()?.stepIndex ?? 0)
   const [errors, setErrors] = useState<FieldError[]>([])
-  const [completed, setCompleted] = useState<StepId[]>([])
+  const [completed, setCompleted] = useState<StepId[]>(() => loadFormDraft()?.completed ?? [])
   const [submitting, setSubmitting] = useState(false)
   const [nowTick, setNowTick] = useState(() => Date.now())
+  const [draftReady, setDraftReady] = useState(false)
+
+  useEffect(() => {
+    setDraftReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!draftReady) return
+    saveFormDraft({ form, stepIndex, completed })
+  }, [form, stepIndex, completed, draftReady])
 
   const current = STEPS[stepIndex]
   const errorMap = useMemo(() => {
@@ -156,6 +166,7 @@ export function AppointmentWizard() {
     setErrors([])
     setCompleted([])
     setStepIndex(0)
+    clearFormDraft()
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -304,15 +315,12 @@ export function AppointmentWizard() {
               </Field>
               {form.electricityOver8000 === "yes" && (
                 <div className="flex flex-col gap-4 border-t border-border pt-4">
-                  <Field label="月額の電気代（円）" htmlFor="electricityAmount" error={errorMap.electricityAmount}>
+                  <Field label="月額の電気代" htmlFor="electricityAmount" error={errorMap.electricityAmount}>
                     <Input
                       id="electricityAmount"
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
                       value={form.electricityAmount}
-                      onChange={(e) => update("electricityAmount", formatElectricityAmount(e.target.value))}
-                      placeholder="12000"
+                      onChange={(e) => update("electricityAmount", e.target.value)}
+                      placeholder="例: 12000円、1万2千円程度"
                       className="h-12 text-base"
                     />
                   </Field>
@@ -376,11 +384,11 @@ export function AppointmentWizard() {
             </Card>
             <Card className="flex flex-col gap-4 p-5">
               <Field
-                label="無料シュミレーションを作るにあたり、先に聞いておきたい事や、ご心配な事はありますか?"
+                label="聞いておきたいこと、メモはありますか?"
                 error={errorMap.hasQuestions}
               >
                 <YesNoToggle
-                  name="聞きたい事・ご心配な事"
+                  name="聞いておきたいこと、メモ"
                   value={form.hasQuestions}
                   onChange={(v) => {
                     update("hasQuestions", v)
