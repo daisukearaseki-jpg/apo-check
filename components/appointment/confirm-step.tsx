@@ -6,6 +6,7 @@ import {
   type AppointmentForm,
   type YesNo,
   NG_ANSWERS,
+  formatDateWithWeekday,
 } from "@/lib/appointment"
 
 interface ConfirmStepProps {
@@ -58,7 +59,7 @@ export function ConfirmStep({
       {/* 日時 */}
       <SummaryBlock title="アポ日時" onEdit={() => onJump(0)}>
         <Row label="お客様名(姓だけ)" value={form.lastName || "未入力"} />
-        <Row label="日付" value={form.date ? `${form.date}（${form.weekday}）` : "未入力"} />
+        <Row label="日付" value={form.date ? formatDateWithWeekday(form.date) : "未入力"} />
         <Row label="時間" value={form.time || "未入力"} />
         <Row label="アポ取得者" value={form.apoGetter || "未入力"} />
         <Row label="ペア" value={form.pair || "未入力"} />

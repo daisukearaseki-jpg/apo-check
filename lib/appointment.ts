@@ -10,7 +10,6 @@ export interface AppointmentForm {
   // ステップ1: アポ日時
   lastName: string
   date: string
-  weekday: string
   time: string
   apoGetter: string
   pair: string
@@ -46,7 +45,6 @@ export const MEMBER_OPTIONS = [
 export const emptyForm: AppointmentForm = {
   lastName: "",
   date: "",
-  weekday: "",
   time: "",
   apoGetter: "",
   pair: "",
@@ -107,6 +105,13 @@ export function getWeekdayLabel(date: string): string {
   const d = new Date(`${date}T00:00:00`)
   if (Number.isNaN(d.getTime())) return ""
   return WEEKDAYS[d.getDay()]
+}
+
+/** 日付と曜日を1つの表示用文字列にまとめる（例: 2026-06-25（金）） */
+export function formatDateWithWeekday(date: string): string {
+  if (!date) return ""
+  const weekday = getWeekdayLabel(date)
+  return weekday ? `${date}（${weekday}）` : date
 }
 
 // 日付が祝日かどうか
@@ -270,7 +275,6 @@ export function validateStep(
 const SCHEDULE_FIELDS = new Set<keyof AppointmentForm>([
   "lastName",
   "date",
-  "weekday",
   "time",
   "apoGetter",
   "pair",

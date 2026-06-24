@@ -12,10 +12,10 @@
  */
 
 var SHEET_HEADERS = [
+  "登録日時",
   "日付",
   "時間",
   "お客様名",
-  "曜日",
   "アポ取得者",
   "ペア",
   "ボイレコ番号",
@@ -32,8 +32,11 @@ var SHEET_HEADERS = [
   "質問有無",
   "質問内容",
   "備考",
-  "登録日時",
 ];
+
+/** 空き枠判定: B列=日付, C列=時間（1-based で 2, 3） */
+var COL_APPOINTMENT_DATE = 2;
+var COL_APPOINTMENT_TIME = 3;
 
 /** 連携するスプレッドシート ID（必ずここを確認） */
 var SPREADSHEET_ID = "1OPCDS_J8HOQqtGxoUKlq8O_DIkZCD_ttcfYz_TXYT00";
@@ -76,7 +79,7 @@ function getDataSheet_() {
 function ensureHeaders_() {
   var sheet = getDataSheet_();
   var first = sheet.getRange(1, 1, 1, SHEET_HEADERS.length).getValues()[0];
-  if (first[0] && String(first[0]).indexOf("日付") !== -1) return;
+  if (first[0] && String(first[0]).indexOf("登録日時") !== -1) return;
   sheet.getRange(1, 1, 1, SHEET_HEADERS.length).setValues([SHEET_HEADERS]);
 }
 
@@ -89,6 +92,12 @@ function normalizeDate_(value) {
 
   var raw = String(value).trim();
   if (!raw) return null;
+
+  // 2026-06-25（金）形式
+  var withWeekday = raw.match(/^(\d{4}-\d{1,2}-\d{1,2})（[日月火水木金土]）$/);
+  if (withWeekday) {
+    raw = withWeekday[1];
+  }
 
   var iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (iso) {
@@ -143,7 +152,9 @@ function readOccupiedSlots_() {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
 
-  var values = sheet.getRange(2, 1, lastRow, 2).getDisplayValues();
+  var values = sheet
+    .getRange(2, COL_APPOINTMENT_DATE, lastRow, COL_APPOINTMENT_TIME)
+    .getDisplayValues();
   var slots = [];
 
   for (var i = 0; i < values.length; i++) {

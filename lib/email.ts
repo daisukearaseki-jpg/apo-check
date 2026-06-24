@@ -1,4 +1,4 @@
-import { type AppointmentForm, type YesNo } from "./appointment"
+import { type AppointmentForm, type YesNo, formatDateWithWeekday } from "./appointment"
 
 function yn(v: YesNo): string {
   if (v === "yes") return "はい"
@@ -42,11 +42,7 @@ function formatRegisteredAt(date: Date): string {
 
 function formatAppointmentDateTime(form: AppointmentForm): string {
   if (!form.date && !form.time) return "未入力"
-  const datePart = form.date
-    ? form.weekday
-      ? `${form.date}（${form.weekday}）`
-      : form.date
-    : ""
+  const datePart = form.date ? formatDateWithWeekday(form.date) : ""
   return [datePart, form.time].filter(Boolean).join(" ")
 }
 
@@ -92,7 +88,7 @@ export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new 
     "━━━━━━━━━━━━━━━━",
     line("アポ日時", appointmentDateTime),
     line("お客様名(姓だけ)", name || "未入力"),
-    line("日付", `${form.date}（${form.weekday}）`),
+    line("日付", formatDateWithWeekday(form.date) || "未入力"),
     line("時間", form.time),
     line("アポ取得者", form.apoGetter || "未入力"),
     line("ペア", form.pair || "未入力"),
@@ -113,7 +109,7 @@ export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new 
     divider(),
     lineHtml("アポ日時", escapeHtml(appointmentDateTime)),
     lineHtml("お客様名(姓だけ)", escapeHtml(name || "未入力")),
-    lineHtml("日付", escapeHtml(`${form.date}（${form.weekday}）`)),
+    lineHtml("日付", escapeHtml(formatDateWithWeekday(form.date) || "未入力")),
     lineHtml("時間", escapeHtml(form.time)),
     lineHtml("アポ取得者", escapeHtml(form.apoGetter || "未入力")),
     lineHtml("ペア", escapeHtml(form.pair || "未入力")),

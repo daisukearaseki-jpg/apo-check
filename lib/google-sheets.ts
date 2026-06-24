@@ -1,4 +1,4 @@
-import { type AppointmentForm, type YesNo, type YesUnknown } from "@/lib/appointment"
+import { type AppointmentForm, type YesNo, type YesUnknown, formatDateWithWeekday } from "@/lib/appointment"
 import { SHEET_COLUMN_COUNT, SHEET_HEADERS } from "@/lib/sheets-config"
 
 export interface OccupiedSlot {
@@ -165,10 +165,10 @@ function formatRegisteredAt(date: Date): string {
 
 export function formToRow(form: AppointmentForm, registeredAt: Date): string[] {
   return [
-    form.date,
+    formatRegisteredAt(registeredAt),
+    formatDateWithWeekday(form.date),
     form.time,
     form.lastName.trim(),
-    form.weekday,
     form.apoGetter,
     form.pair,
     form.voirecoNumber,
@@ -185,7 +185,6 @@ export function formToRow(form: AppointmentForm, registeredAt: Date): string[] {
     solarLabel(form.hasQuestions),
     form.questionDetail,
     "",
-    formatRegisteredAt(registeredAt),
   ]
 }
 

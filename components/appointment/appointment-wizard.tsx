@@ -15,7 +15,7 @@ import {
   type StepId,
   emptyForm,
   STEPS,
-  getWeekdayLabel,
+  formatDateWithWeekday,
   getSlotCategory,
   isHoliday,
   validateStep,
@@ -115,13 +115,11 @@ export function AppointmentWizard() {
     }
   }, [form.date, form.time, timeSlots, loadingSlots])
 
-  // 日付変更時: 曜日を自動判定し、区分が変わるため時間選択をリセット
+  // 日付変更時: 区分が変わるため時間選択をリセット
   function handleDateChange(date: string) {
-    const weekday = getWeekdayLabel(date)
     setForm((prev) => ({
       ...prev,
       date,
-      weekday,
       time: "",
     }))
     setErrors((prev) => prev.filter((e) => e.field !== "date" && e.field !== "time"))
@@ -239,7 +237,7 @@ export function AppointmentWizard() {
         return
       }
 
-      const description = `${form.lastName} 様 / ${form.date}(${form.weekday}) ${form.time}`
+      const description = `${form.lastName} 様 / ${formatDateWithWeekday(form.date)} ${form.time}`
       if (body.sheetSaved && body.emailSent === false) {
         toast.success("スプレッドシートに登録しました", {
           description:
@@ -307,9 +305,9 @@ export function AppointmentWizard() {
                 value={form.date}
                 onChange={handleDateChange}
               />
-              {form.date && form.weekday && (
+              {form.date && (
                 <p className="mt-2 text-sm font-medium text-foreground">
-                  {form.date}（{form.weekday}）
+                  {formatDateWithWeekday(form.date)}
                   {isHoliday(form.date) && (
                     <span className="ml-1 rounded bg-accent px-1.5 py-0.5 text-xs font-bold text-accent-foreground">
                       祝日

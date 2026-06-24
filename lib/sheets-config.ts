@@ -1,9 +1,9 @@
 /** Google スプレッドシートの列定義（1行目ヘッダー） */
 export const SHEET_HEADERS = [
+  "登録日時",
   "日付",
   "時間",
   "お客様名",
-  "曜日",
   "アポ取得者",
   "ペア",
   "ボイレコ番号",
@@ -20,7 +20,10 @@ export const SHEET_HEADERS = [
   "質問有無",
   "質問内容",
   "備考",
-  "登録日時",
 ] as const
 
 export const SHEET_COLUMN_COUNT = SHEET_HEADERS.length
+
+/** 空き枠判定に使う列インデックス（0-based） */
+export const SHEET_COL_APPOINTMENT_DATE = 1
+export const SHEET_COL_APPOINTMENT_TIME = 2
