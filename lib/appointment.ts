@@ -107,11 +107,15 @@ export function getWeekdayLabel(date: string): string {
   return WEEKDAYS[d.getDay()]
 }
 
-/** 日付と曜日を1つの表示用文字列にまとめる（例: 2026-06-25（金）） */
+/** 日付と曜日を1つの表示用文字列にまとめる（例: 2026/6/25(金)） */
 export function formatDateWithWeekday(date: string): string {
   if (!date) return ""
+  const match = date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (!match) return date
+  const [, year, month, day] = match
   const weekday = getWeekdayLabel(date)
-  return weekday ? `${date}（${weekday}）` : date
+  const compact = `${year}/${Number(month)}/${Number(day)}`
+  return weekday ? `${compact}(${weekday})` : compact
 }
 
 // 日付が祝日かどうか

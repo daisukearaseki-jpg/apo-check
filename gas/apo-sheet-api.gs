@@ -92,8 +92,8 @@ function normalizeDate_(value) {
   var raw = String(value).trim();
   if (!raw) return null;
 
-  // 2026-06-25（金）形式
-  var withWeekday = raw.match(/^(\d{4}-\d{1,2}-\d{1,2})（[日月火水木金土]）$/);
+  // 2026-06-25（金）, 2026/6/28(日) 形式
+  var withWeekday = raw.match(/^(\d{4}[-/]\d{1,2}[-/]\d{1,2})[（(][日月火水木金土][）)]$/);
   if (withWeekday) {
     raw = withWeekday[1];
   }

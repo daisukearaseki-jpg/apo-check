@@ -104,17 +104,19 @@ export function normalizeDate(value: unknown): string | null {
   const raw = String(value).trim()
   if (!raw) return null
 
-  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  const withoutWeekday = raw.replace(/[（(][日月火水木金土][）)]$/, "")
+
+  const iso = withoutWeekday.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
   if (iso) {
     return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`
   }
 
-  const slash = raw.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/)
+  const slash = withoutWeekday.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/)
   if (slash) {
     return `${slash[1]}-${slash[2].padStart(2, "0")}-${slash[3].padStart(2, "0")}`
   }
 
-  const parsed = new Date(`${raw}T00:00:00`)
+  const parsed = new Date(`${withoutWeekday}T00:00:00`)
   if (!Number.isNaN(parsed.getTime())) {
     const y = parsed.getFullYear()
     const m = String(parsed.getMonth() + 1).padStart(2, "0")
