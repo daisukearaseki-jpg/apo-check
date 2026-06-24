@@ -15,7 +15,6 @@ import {
   type StepId,
   emptyForm,
   STEPS,
-  getAvailableTimeSlots,
   getWeekdayLabel,
   getSlotCategory,
   isHoliday,
@@ -70,29 +69,60 @@ export function AppointmentWizard() {
   }, [current.id])
 
   const now = useMemo(() => new Date(nowTick), [nowTick])
-  const timeSlots = useMemo(
-    () => getAvailableTimeSlots(form.date, now),
-    [form.date, now],
-  )
+  const [timeSlots, setTimeSlots] = useState<string[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [slotsError, setSlotsError] = useState<string | null>(null)
 
-  // 時刻経過で選択中の時間が無効になったら解除
+  useEffect(() => {
+    if (!form.date) {
+      setTimeSlots([])
+      setSlotsError(null)
+      return
+    }
+
+    let cancelled = false
+    setLoadingSlots(true)
+    setSlotsError(null)
+
+    fetch(`/api/availability?date=${form.date}`, { cache: "no-store" })
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          throw new Error(typeof body.error === "string" ? body.error : "空き時間の取得に失敗しました")
+        }
+        if (cancelled) return
+        setTimeSlots(Array.isArray(body.slots) ? body.slots : [])
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        setTimeSlots([])
+        setSlotsError(error instanceof Error ? error.message : "空き時間の取得に失敗しました")
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [form.date, nowTick])
+
+  // 時刻経過やシート更新で選択中の時間が無効になったら解除
   useEffect(() => {
     if (!form.date || !form.time) return
-    if (!getAvailableTimeSlots(form.date, now).includes(form.time)) {
+    if (!loadingSlots && !timeSlots.includes(form.time)) {
       setForm((prev) => ({ ...prev, time: "" }))
     }
-  }, [form.date, form.time, now])
+  }, [form.date, form.time, timeSlots, loadingSlots])
 
   // 日付変更時: 曜日を自動判定し、区分が変わるため時間選択をリセット
   function handleDateChange(date: string) {
     const weekday = getWeekdayLabel(date)
-    const slots = getAvailableTimeSlots(date, now)
     setForm((prev) => ({
       ...prev,
       date,
       weekday,
-      // 新しい日付の枠に含まれない時間は解除
-      time: slots.includes(prev.time) ? prev.time : "",
+      time: "",
     }))
     setErrors((prev) => prev.filter((e) => e.field !== "date" && e.field !== "time"))
     if (date && getSlotCategory(date) === "none") {
@@ -103,7 +133,7 @@ export function AppointmentWizard() {
   }
 
   function goNext() {
-    const found = validateStep(current.id, form, now)
+    const found = validateStep(current.id, form, now, { allowedTimeSlots: timeSlots })
     if (found.length > 0) {
       setErrors(found)
       toast.error("未入力・誤りがあります", {
@@ -128,7 +158,21 @@ export function AppointmentWizard() {
   }
 
   async function handleSubmit() {
-    const found = validateForm(form, now)
+    let latestSlots = timeSlots
+    if (form.date) {
+      try {
+        const res = await fetch(`/api/availability?date=${form.date}`, { cache: "no-store" })
+        const body = await res.json().catch(() => ({}))
+        if (res.ok && Array.isArray(body.slots)) {
+          latestSlots = body.slots
+          setTimeSlots(body.slots)
+        }
+      } catch {
+        // 直前取得に失敗した場合は直近の表示状態で検証
+      }
+    }
+
+    const found = validateForm(form, now, { allowedTimeSlots: latestSlots })
     if (found.length > 0) {
       setErrors(found)
       const first = found[0]
@@ -167,6 +211,24 @@ export function AppointmentWizard() {
           return
         }
 
+        if (res.status === 409) {
+          toast.error("この日時は予約できません", {
+            description:
+              typeof body.error === "string"
+                ? body.error
+                : "別の日時を選択してください",
+          })
+          if (form.date) {
+            fetch(`/api/availability?date=${form.date}`, { cache: "no-store" })
+              .then((r) => r.json())
+              .then((d) => {
+                if (Array.isArray(d.slots)) setTimeSlots(d.slots)
+              })
+              .catch(() => {})
+          }
+          return
+        }
+
         const description =
           typeof body.details === "string"
             ? body.details
@@ -178,7 +240,16 @@ export function AppointmentWizard() {
       }
 
       const description = `${form.lastName} 様 / ${form.date}(${form.weekday}) ${form.time}`
-      toast.success("アポ情報を送信しました", { description })
+      if (body.sheetSaved && body.emailSent === false) {
+        toast.success("スプレッドシートに登録しました", {
+          description:
+            typeof body.warning === "string"
+              ? body.warning
+              : `${description}（メールは未送信）`,
+        })
+      } else {
+        toast.success("アポ情報を送信しました", { description })
+      }
       handleReset()
     } catch {
       toast.error("送信に失敗しました", {
@@ -252,6 +323,14 @@ export function AppointmentWizard() {
               {!form.date ? (
                 <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
                   先に日付を選択してください
+                </p>
+              ) : loadingSlots ? (
+                <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                  空き時間を読み込み中...
+                </p>
+              ) : slotsError ? (
+                <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-destructive">
+                  {slotsError}
                 </p>
               ) : timeSlots.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">

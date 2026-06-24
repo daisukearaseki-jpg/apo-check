@@ -182,6 +182,11 @@ export interface FieldError {
   message: string
 }
 
+export interface ValidateOptions {
+  /** シート反映後の選択可能時間。指定時はこちらを優先して検証する */
+  allowedTimeSlots?: string[]
+}
+
 // 適格項目: NGとなる回答 (商談を進められない可能性が高い回答)
 export const NG_ANSWERS: Partial<Record<keyof AppointmentForm, YesNo | YesUnknown>> = {
   isBuildingOwner: "no",
@@ -193,6 +198,7 @@ export function validateStep(
   step: StepId,
   form: AppointmentForm,
   now = new Date(),
+  options?: ValidateOptions,
 ): FieldError[] {
   const errors: FieldError[] = []
   const req = (field: keyof AppointmentForm, message: string) => {
@@ -208,12 +214,25 @@ export function validateStep(
     if (form.date && getSlotCategory(form.date) === "none") {
       errors.push({ field: "date", message: "火・水は予約枠がありません。別の日を選択してください" })
     }
-    if (form.date && !isBookableDate(form.date, now)) {
+    const allowedTimeSlots =
+      options?.allowedTimeSlots ?? (form.date ? getAvailableTimeSlots(form.date, now) : [])
+
+    if (form.date && options?.allowedTimeSlots !== undefined) {
+      if (allowedTimeSlots.length === 0) {
+        errors.push({
+          field: "date",
+          message: "この日付に選択可能な時間がありません。別の日を選択してください",
+        })
+      }
+    } else if (form.date && !isBookableDate(form.date, now)) {
       errors.push({ field: "date", message: "この日付に選択可能な時間がありません。別の日を選択してください" })
     }
     req("time", "時間を選択してください")
-    if (form.date && form.time && !getAvailableTimeSlots(form.date, now).includes(form.time)) {
-      errors.push({ field: "time", message: "過去の時間は選択できません" })
+    if (form.date && form.time && !allowedTimeSlots.includes(form.time)) {
+      errors.push({
+        field: "time",
+        message: "選択した時間は予約できません。別の時間を選び直してください",
+      })
     }
     req("apoGetter", "アポ取得者を選択または入力してください")
     req("pair", "ペアを選択または入力してください")
@@ -268,9 +287,13 @@ export function getStepIndexForField(field: keyof AppointmentForm): number {
   return STEPS.findIndex((step) => step.id === stepId)
 }
 
-export function validateForm(form: AppointmentForm, now = new Date()): FieldError[] {
+export function validateForm(
+  form: AppointmentForm,
+  now = new Date(),
+  options?: ValidateOptions,
+): FieldError[] {
   return [
-    ...validateStep("schedule", form, now),
-    ...validateStep("qualify", form, now),
+    ...validateStep("schedule", form, now, options),
+    ...validateStep("qualify", form, now, options),
   ]
 }

@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 import {
   WEEKDAYS,
   getMinAppointmentDate,
-  getAvailableTimeSlots,
   getSlotCategory,
   isHoliday,
 } from "@/lib/appointment"
@@ -37,6 +36,9 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
   const [viewYear, setViewYear] = useState(today.year)
   const [viewMonth, setViewMonth] = useState(today.month)
   const [nowTick, setNowTick] = useState(() => Date.now())
+  const [bookableDates, setBookableDates] = useState<Set<string>>(new Set())
+  const [loadingMonth, setLoadingMonth] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => setNowTick(Date.now()), 60_000)
@@ -44,13 +46,42 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
   }, [])
 
   const now = useMemo(() => new Date(nowTick), [nowTick])
+  const monthKey = `${viewYear}-${String(viewMonth).padStart(2, "0")}`
+
+  useEffect(() => {
+    let cancelled = false
+    setLoadingMonth(true)
+    setLoadError(null)
+
+    fetch(`/api/availability?month=${monthKey}`, { cache: "no-store" })
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          throw new Error(typeof body.error === "string" ? body.error : "空き日の取得に失敗しました")
+        }
+        if (cancelled) return
+        setBookableDates(new Set(Array.isArray(body.bookableDates) ? body.bookableDates : []))
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        setBookableDates(new Set())
+        setLoadError(error instanceof Error ? error.message : "空き日の取得に失敗しました")
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingMonth(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [monthKey, nowTick])
 
   const minIndex = monthIndex(today.year, today.month)
   const viewIndex = monthIndex(viewYear, viewMonth)
   const canGoPrev = viewIndex > minIndex
 
   const cells = useMemo(() => {
-    const minDate = getMinAppointmentDate()
+    const minDate = getMinAppointmentDate(now)
     const daysInMonth = new Date(viewYear, viewMonth, 0).getDate()
     const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay()
     const result: ({ day: number; date: string } | null)[] = []
@@ -59,7 +90,11 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = toDateString(viewYear, viewMonth, day)
-      if (date < minDate || getSlotCategory(date) === "none" || getAvailableTimeSlots(date, now).length === 0) {
+      if (
+        date < minDate ||
+        getSlotCategory(date) === "none" ||
+        !bookableDates.has(date)
+      ) {
         result.push(null)
       } else {
         result.push({ day, date })
@@ -68,7 +103,7 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
 
     while (result.length % 7 !== 0) result.push(null)
     return result
-  }, [viewYear, viewMonth, now])
+  }, [viewYear, viewMonth, now, bookableDates])
 
   function goPrevMonth() {
     if (!canGoPrev) return
@@ -117,6 +152,13 @@ export function AppointmentDatePicker({ value, onChange, id }: AppointmentDatePi
           <ChevronRight className="size-5" />
         </Button>
       </div>
+
+      {loadingMonth && (
+        <p className="text-center text-xs text-muted-foreground">空き状況を読み込み中...</p>
+      )}
+      {loadError && (
+        <p className="text-center text-xs text-destructive">{loadError}</p>
+      )}
 
       <div className="grid grid-cols-7 gap-1" role="grid" aria-label="アポ日付">
         {WEEKDAYS.map((w, i) => (
