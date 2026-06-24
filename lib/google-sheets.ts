@@ -184,7 +184,6 @@ export function formToRow(form: AppointmentForm, registeredAt: Date): string[] {
     form.elevationDrawing,
     solarLabel(form.hasQuestions),
     form.questionDetail,
-    "",
   ]
 }
 
