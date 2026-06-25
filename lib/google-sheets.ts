@@ -170,7 +170,21 @@ export function isSlotOccupied(
 }
 
 function formatRegisteredAt(date: Date): string {
-  return date.toLocaleString("ja-JP", { timeZone: JST })
+  const [y, m, d] = new Intl.DateTimeFormat("en-CA", {
+    timeZone: JST,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(date)
+    .split("-")
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: JST,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date)
+  return `${Number(y)}/${Number(m)}/${Number(d)} ${time}`
 }
 
 export function formToRow(form: AppointmentForm, registeredAt: Date): string[] {

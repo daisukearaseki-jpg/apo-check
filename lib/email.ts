@@ -37,7 +37,21 @@ function divider(): string {
 }
 
 function formatRegisteredAt(date: Date): string {
-  return date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+  const [y, m, d] = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(date)
+    .split("-")
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Tokyo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date)
+  return `${Number(y)}/${Number(m)}/${Number(d)} ${time}`
 }
 
 function formatAppointmentDateTime(form: AppointmentForm): string {
