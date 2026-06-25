@@ -1,5 +1,5 @@
 import { type AppointmentForm, type YesNo, type YesUnknown, formatDateWithWeekday } from "@/lib/appointment"
-import { SHEET_COLUMN_COUNT, SHEET_HEADERS } from "@/lib/sheets-config"
+import { SHEET_COLUMN_COUNT, SHEET_HEADERS, buildSpreadsheetRowUrl } from "@/lib/sheets-config"
 
 export interface OccupiedSlot {
   date: string
@@ -34,8 +34,16 @@ function getGasSecret(): string {
 interface GasResponse {
   ok?: boolean
   slots?: OccupiedSlot[]
+  row?: number
+  sheetGid?: number
   error?: string
   code?: number
+}
+
+export interface AppendAppointmentResult {
+  row: number
+  sheetGid: number
+  rowUrl: string
 }
 
 async function parseGasResponse(res: Response): Promise<GasResponse> {
@@ -192,7 +200,7 @@ export function formToRow(form: AppointmentForm, registeredAt: Date): string[] {
 export async function appendAppointment(
   form: AppointmentForm,
   registeredAt: Date,
-): Promise<void> {
+): Promise<AppendAppointmentResult> {
   const row = formToRow(form, registeredAt)
   if (row.length !== SHEET_COLUMN_COUNT) {
     throw new Error("シート列定義の件数が一致しません")
@@ -214,6 +222,20 @@ export async function appendAppointment(
   const parsed = await parseGasResponse(res)
   if (!parsed.ok) {
     throw new Error("スプレッドシートへの登録に失敗しました")
+  }
+  if (
+    typeof parsed.row !== "number" ||
+    !Number.isInteger(parsed.row) ||
+    parsed.row < 2 ||
+    typeof parsed.sheetGid !== "number"
+  ) {
+    throw new Error("スプレッドシート連携の応答に行番号が含まれていません")
+  }
+
+  return {
+    row: parsed.row,
+    sheetGid: parsed.sheetGid,
+    rowUrl: buildSpreadsheetRowUrl(parsed.sheetGid, parsed.row),
   }
 }
 

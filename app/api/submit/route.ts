@@ -91,6 +91,7 @@ export async function POST(req: Request) {
     )
   }
 
+  let appendResult: { rowUrl: string }
   try {
     const occupied = await readOccupiedSlots()
     if (isSlotOccupied(occupied, form.date, form.time)) {
@@ -100,7 +101,7 @@ export async function POST(req: Request) {
       )
     }
 
-    await appendAppointment(form, registeredAt)
+    appendResult = await appendAppointment(form, registeredAt)
   } catch (error) {
     if (error instanceof SlotConflictError) {
       return NextResponse.json({ error: error.message }, { status: 409 })
@@ -112,7 +113,7 @@ export async function POST(req: Request) {
 
   const from = process.env.RESEND_FROM ?? "Apo Check <onboarding@resend.dev>"
   const to = getNotificationRecipients(from)
-  const { subject, text, html } = buildAppointmentEmail(form, registeredAt)
+  const { subject, text, html } = buildAppointmentEmail(form, registeredAt, appendResult.rowUrl)
   const idempotencyKey = buildIdempotencyKey(form)
 
   const { data, error } = await resend.emails.send(

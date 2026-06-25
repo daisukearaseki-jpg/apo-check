@@ -46,7 +46,11 @@ function formatAppointmentDateTime(form: AppointmentForm): string {
   return [datePart, form.time].filter(Boolean).join(" ")
 }
 
-export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new Date()) {
+export function buildAppointmentEmail(
+  form: AppointmentForm,
+  registeredAt = new Date(),
+  sheetRowUrl?: string,
+) {
   const name = form.lastName.trim()
   const subject = `【アポ取得】${name} 様 / ${form.date} ${form.time}`
   const registeredAtLabel = formatRegisteredAt(registeredAt)
@@ -82,7 +86,7 @@ export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new 
 
   const text = [
     line("登録日時", registeredAtLabel),
-    "",
+    ...(sheetRowUrl ? [line("スプレッドシート", sheetRowUrl), ""] : []),
     "━━━━━━━━━━━━━━━━",
     "■ アポ日時",
     "━━━━━━━━━━━━━━━━",
@@ -104,6 +108,14 @@ export function buildAppointmentEmail(form: AppointmentForm, registeredAt = new 
   const html = [
     `<div style="font-family:sans-serif;font-size:14px;line-height:1.6;color:#111">`,
     lineHtml("登録日時", escapeHtml(registeredAtLabel)),
+    ...(sheetRowUrl
+      ? [
+          lineHtml(
+            "スプレッドシート",
+            `<a href="${escapeHtml(sheetRowUrl)}" style="color:#2563eb">登録行を開く</a>`,
+          ),
+        ]
+      : []),
     divider(),
     sectionTitle("アポ日時"),
     divider(),

@@ -246,7 +246,9 @@ function handleAppend_(body) {
 
   var sheet = getDataSheet_();
   sheet.appendRow(row);
-  return jsonOutput_({ ok: true });
+  var rowNumber = sheet.getLastRow();
+  var sheetGid = sheet.getSheetId();
+  return jsonOutput_({ ok: true, row: rowNumber, sheetGid: sheetGid });
 }
 
 /** 初回のみ実行: API_SECRET を生成して Script Properties に保存 */

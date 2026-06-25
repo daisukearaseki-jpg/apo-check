@@ -23,6 +23,14 @@ export const SHEET_HEADERS = [
 
 export const SHEET_COLUMN_COUNT = SHEET_HEADERS.length
 
+/** 連携するスプレッドシート ID（gas/apo-sheet-api.gs と一致させる） */
+export const SPREADSHEET_ID = "1OPCDS_J8HOQqtGxoUKlq8O_DIkZCD_ttcfYz_TXYT00"
+
 /** 空き枠判定に使う列インデックス（0-based） */
 export const SHEET_COL_APPOINTMENT_DATE = 1
 export const SHEET_COL_APPOINTMENT_TIME = 2
+
+/** 登録行への Google スプレッドシート URL */
+export function buildSpreadsheetRowUrl(sheetGid: number, row: number): string {
+  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=${sheetGid}&range=A${row}`
+}
