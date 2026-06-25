@@ -30,6 +30,11 @@ export const SPREADSHEET_ID = "1OPCDS_J8HOQqtGxoUKlq8O_DIkZCD_ttcfYz_TXYT00"
 export const SHEET_COL_APPOINTMENT_DATE = 1
 export const SHEET_COL_APPOINTMENT_TIME = 2
 
+/** スプレッドシート全体への URL */
+export function buildSpreadsheetUrl(): string {
+  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`
+}
+
 /** 登録行への Google スプレッドシート URL */
 export function buildSpreadsheetRowUrl(sheetGid: number, row: number): string {
   return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=${sheetGid}&range=A${row}`

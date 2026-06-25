@@ -1,5 +1,5 @@
 import { type AppointmentForm, type YesNo, type YesUnknown, formatDateWithWeekday } from "@/lib/appointment"
-import { SHEET_COLUMN_COUNT, SHEET_HEADERS, buildSpreadsheetRowUrl } from "@/lib/sheets-config"
+import { SHEET_COLUMN_COUNT, SHEET_HEADERS, buildSpreadsheetRowUrl, buildSpreadsheetUrl } from "@/lib/sheets-config"
 
 export interface OccupiedSlot {
   date: string
@@ -223,19 +223,24 @@ export async function appendAppointment(
   if (!parsed.ok) {
     throw new Error("スプレッドシートへの登録に失敗しました")
   }
-  if (
-    typeof parsed.row !== "number" ||
-    !Number.isInteger(parsed.row) ||
-    parsed.row < 2 ||
-    typeof parsed.sheetGid !== "number"
-  ) {
-    throw new Error("スプレッドシート連携の応答に行番号が含まれていません")
+
+  const row = Number(parsed.row)
+  const sheetGid = Number(parsed.sheetGid)
+  if (Number.isInteger(row) && row >= 2 && Number.isFinite(sheetGid)) {
+    return {
+      row,
+      sheetGid,
+      rowUrl: buildSpreadsheetRowUrl(sheetGid, row),
+    }
   }
 
+  console.warn(
+    "GAS append response missing row/sheetGid; using spreadsheet URL without row. Redeploy gas/apo-sheet-api.gs.",
+  )
   return {
-    row: parsed.row,
-    sheetGid: parsed.sheetGid,
-    rowUrl: buildSpreadsheetRowUrl(parsed.sheetGid, parsed.row),
+    row: 0,
+    sheetGid: 0,
+    rowUrl: buildSpreadsheetUrl(),
   }
 }
 
