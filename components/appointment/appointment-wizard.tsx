@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight, ClipboardCheck, RotateCcw } from "lucide-react"
+import { ChevronLeft, ChevronRight, ClipboardCheck, Loader2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 import {
   type AppointmentForm,
@@ -41,6 +42,7 @@ export function AppointmentWizard() {
   const [nowTick, setNowTick] = useState(() => Date.now())
   const [draftReady, setDraftReady] = useState(false)
   const skipInitialScroll = useRef(true)
+  const submitInFlightRef = useRef(false)
 
   function scrollToTop() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" })
@@ -175,36 +177,40 @@ export function AppointmentWizard() {
   }
 
   async function handleSubmit() {
-    let latestSlots = timeSlots
-    if (form.date) {
-      try {
-        const res = await fetch(`/api/availability?date=${form.date}`, { cache: "no-store" })
-        const body = await res.json().catch(() => ({}))
-        if (res.ok && Array.isArray(body.slots)) {
-          latestSlots = body.slots
-          setTimeSlots(body.slots)
-        }
-      } catch {
-        // 直前取得に失敗した場合は直近の表示状態で検証
-      }
-    }
+    if (submitInFlightRef.current) return
 
-    const found = validateForm(form, now, { allowedTimeSlots: latestSlots })
-    if (found.length > 0) {
-      setErrors(found)
-      const first = found[0]
-      const targetStep = getStepIndexForField(first.field)
-      if (targetStep >= 0) {
-        setStepIndex(targetStep)
-      }
-      toast.error("未入力・誤りがあります", {
-        description: first.message,
-      })
-      return
-    }
-
+    submitInFlightRef.current = true
     setSubmitting(true)
+
     try {
+      let latestSlots = timeSlots
+      if (form.date) {
+        try {
+          const res = await fetch(`/api/availability?date=${form.date}`, { cache: "no-store" })
+          const body = await res.json().catch(() => ({}))
+          if (res.ok && Array.isArray(body.slots)) {
+            latestSlots = body.slots
+            setTimeSlots(body.slots)
+          }
+        } catch {
+          // 直前取得に失敗した場合は直近の表示状態で検証
+        }
+      }
+
+      const found = validateForm(form, now, { allowedTimeSlots: latestSlots })
+      if (found.length > 0) {
+        setErrors(found)
+        const first = found[0]
+        const targetStep = getStepIndexForField(first.field)
+        if (targetStep >= 0) {
+          setStepIndex(targetStep)
+        }
+        toast.error("未入力・誤りがあります", {
+          description: first.message,
+        })
+        return
+      }
+
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -271,6 +277,7 @@ export function AppointmentWizard() {
         description: "ネットワークエラーが発生しました",
       })
     } finally {
+      submitInFlightRef.current = false
       setSubmitting(false)
     }
   }
@@ -581,10 +588,24 @@ export function AppointmentWizard() {
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="h-12 flex-[2] text-base font-bold"
+              aria-busy={submitting}
+              className={cn(
+                "h-12 flex-[2] text-base font-bold transition-colors",
+                submitting &&
+                  "border-amber-500/60 bg-amber-500 text-white shadow-sm hover:bg-amber-500 disabled:opacity-100",
+              )}
             >
-              <ClipboardCheck className="size-5" />
-              {submitting ? "送信中..." : "この内容で登録"}
+              {submitting ? (
+                <>
+                  <Loader2 className="size-5 animate-spin" aria-hidden />
+                  送信中…
+                </>
+              ) : (
+                <>
+                  <ClipboardCheck className="size-5" aria-hidden />
+                  この内容で登録
+                </>
+              )}
             </Button>
           )}
         </div>
