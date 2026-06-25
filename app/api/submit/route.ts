@@ -13,7 +13,10 @@ import {
   SlotConflictError,
 } from "@/lib/google-sheets"
 
-const DEFAULT_NOTIFICATION_RECIPIENTS = ["daisuke.araseki@gmail.com"] as const
+const DEFAULT_NOTIFICATION_RECIPIENTS = [
+  "daisuke.araseki@gmail.com",
+  "matsui@smart-re-house.com",
+] as const
 
 const RESEND_SANDBOX_RECIPIENT = "daisuke.araseki@gmail.com"
 
