@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight, ClipboardCheck, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
@@ -40,6 +40,27 @@ export function AppointmentWizard() {
   const [submitting, setSubmitting] = useState(false)
   const [nowTick, setNowTick] = useState(() => Date.now())
   const [draftReady, setDraftReady] = useState(false)
+  const skipInitialScroll = useRef(true)
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
+
+  useEffect(() => {
+    if (skipInitialScroll.current) {
+      skipInitialScroll.current = false
+      return
+    }
+
+    scrollToTop()
+    const frame = requestAnimationFrame(() => {
+      scrollToTop()
+      requestAnimationFrame(scrollToTop)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [stepIndex])
 
   useEffect(() => {
     setDraftReady(true)
@@ -143,7 +164,6 @@ export function AppointmentWizard() {
     setCompleted((prev) => (prev.includes(current.id) ? prev : [...prev, current.id]))
     if (stepIndex < STEPS.length - 1) {
       setStepIndex((i) => i + 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
@@ -151,7 +171,6 @@ export function AppointmentWizard() {
     setErrors([])
     if (stepIndex > 0) {
       setStepIndex((i) => i - 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
@@ -177,7 +196,6 @@ export function AppointmentWizard() {
       const targetStep = getStepIndexForField(first.field)
       if (targetStep >= 0) {
         setStepIndex(targetStep)
-        window.scrollTo({ top: 0, behavior: "smooth" })
       }
       toast.error("未入力・誤りがあります", {
         description: first.message,
@@ -201,7 +219,6 @@ export function AppointmentWizard() {
           const targetStep = getStepIndexForField(first.field)
           if (targetStep >= 0) {
             setStepIndex(targetStep)
-            window.scrollTo({ top: 0, behavior: "smooth" })
           }
           toast.error("入力内容に不備があります", {
             description: first.message,
@@ -264,7 +281,6 @@ export function AppointmentWizard() {
     setCompleted([])
     setStepIndex(0)
     clearFormDraft()
-    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
@@ -525,7 +541,6 @@ export function AppointmentWizard() {
             onJump={(i) => {
               setErrors([])
               setStepIndex(i)
-              window.scrollTo({ top: 0, behavior: "smooth" })
             }}
           />
         )}
