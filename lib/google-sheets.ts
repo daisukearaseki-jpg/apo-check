@@ -201,8 +201,8 @@ export async function appendAppointment(
   form: AppointmentForm,
   registeredAt: Date,
 ): Promise<AppendAppointmentResult> {
-  const row = formToRow(form, registeredAt)
-  if (row.length !== SHEET_COLUMN_COUNT) {
+  const rowData = formToRow(form, registeredAt)
+  if (rowData.length !== SHEET_COLUMN_COUNT) {
     throw new Error("シート列定義の件数が一致しません")
   }
 
@@ -214,7 +214,7 @@ export async function appendAppointment(
     JSON.stringify({
       date: form.date,
       time: form.time,
-      row,
+      row: rowData,
     }),
   )
 
@@ -224,13 +224,13 @@ export async function appendAppointment(
     throw new Error("スプレッドシートへの登録に失敗しました")
   }
 
-  const row = Number(parsed.row)
+  const rowNumber = Number(parsed.row)
   const sheetGid = Number(parsed.sheetGid)
-  if (Number.isInteger(row) && row >= 2 && Number.isFinite(sheetGid)) {
+  if (Number.isInteger(rowNumber) && rowNumber >= 2 && Number.isFinite(sheetGid)) {
     return {
-      row,
+      row: rowNumber,
       sheetGid,
-      rowUrl: buildSpreadsheetRowUrl(sheetGid, row),
+      rowUrl: buildSpreadsheetRowUrl(sheetGid, rowNumber),
     }
   }
 
